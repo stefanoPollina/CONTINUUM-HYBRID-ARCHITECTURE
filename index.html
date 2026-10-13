@@ -1,0 +1,764 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Parallel Hybrid Architecture</title><style>
+:root{color-scheme:dark;--bg:#0d0d0d;--panel:#1d1d1d;--edge:#3e3e3e;--text:#e6f2f8;--muted:#acacac;--teal:#bdbdbd;--amber:#ffbd65}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#282828,#0d0d0d 70%);font:14px system-ui,Segoe UI,sans-serif;color:var(--text)}header{padding:18px max(16px,3vw);border-bottom:1px solid var(--edge)}h1{margin:0;font-size:clamp(22px,3vw,34px);letter-spacing:.08em}header p{margin:4px 0;color:var(--muted)}main{padding:16px;max-width:1600px;margin:auto}.toolbar,.panel{background:#1a1a1a;border:1px solid var(--edge);border-radius:13px;padding:12px;margin-bottom:14px}.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px}button,select,input{accent-color:var(--teal);font:inherit}button,select{color:var(--text);background:#333333;border:1px solid #5c5c5c;border-radius:8px;padding:9px 11px;cursor:pointer}button:hover{border-color:var(--teal)}button.primary{background:#5e5e5e}button.active{background:#78532b;border-color:var(--amber)}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--amber)}label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}input[type=range]{width:100%;height:28px;touch-action:none}input[type=checkbox]{width:20px;height:20px}.banks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,335px),1fr));gap:12px}.bank{background:#1c1c1c;border:1px solid #4f4f4f;border-radius:13px;padding:12px;min-width:0}.bankHead{display:flex;align-items:center;gap:9px;margin-bottom:10px}.bankHead h2{font-size:16px;margin:0;flex:1}.tag{font-size:11px;color:var(--teal)}.slots{display:grid;gap:5px}.slot{display:grid;grid-template-columns:25px minmax(0,1fr) 76px;gap:6px;align-items:center;background:#282828;border:1px solid #3d3d3d;border-radius:7px;padding:5px}.slot select{width:100%;min-width:0;padding:7px 3px;font-size:12px}.slot button{padding:7px 4px;font-size:11px}.slot input{margin:0}.bus{margin-top:10px;border-top:1px solid var(--edge);padding-top:10px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.bus label{min-width:0}.bus label span{color:var(--text);font-size:11px}.insert{display:flex;gap:5px;align-items:center;margin-top:10px}.insert select{flex:1;min-width:0}.lower{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:14px}.lower .panel{margin:0}.panel h3{margin:0 0 12px;color:var(--amber)}.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.keys{display:flex;gap:4px;overflow-x:auto;padding:8px 0;touch-action:pan-x}.key{flex:0 0 44px;height:105px;background:linear-gradient(#dce8e8,#a4a4a4);color:#1e1e1e;border-radius:4px 4px 9px 9px;border:1px solid #dce8e8;touch-action:none;font-weight:bold}.key.sharp{background:linear-gradient(#4f4f4f,#1a1a1a);color:#fff;height:74px}.key.pressed{background:var(--amber);color:#111}.steps{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}.steps button{padding:10px 0}.steps button.on{background:#5c5c5c;border-color:var(--teal)}.steps button.play{outline:2px solid var(--amber)}.note{font-size:12px;color:var(--muted)}.footer{font-size:12px;color:var(--muted);padding:18px 4px;line-height:1.6}.status{color:var(--teal);font-size:12px}.meters{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin-top:8px}.meter{height:8px;background:#323232;border-radius:9px;overflow:hidden}.meter i{display:block;height:100%;background:var(--teal);width:0%}@media(max-width:620px){.slot{grid-template-columns:24px minmax(0,1fr) 68px}.toolbar{gap:7px}header{padding:14px}.bus{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Prototype 02: stacked instrument chassis */
+:root{--bg:#0b0b0b;--panel:#191919;--edge:#454545;--teal:#c1c1c1;--amber:#ffae4c}body{background:radial-gradient(ellipse at 55% -10%,#333333 0%,#101010 45%,#080808 100%);font-family:Inter,system-ui,Segoe UI,sans-serif}header{background:linear-gradient(100deg,#1d1d1d,#101010);border-bottom:2px solid #bd7831;box-shadow:0 8px 30px #0009;padding:22px max(16px,3vw)}header h1{font-size:clamp(28px,4vw,46px);font-weight:850;letter-spacing:.13em;text-shadow:0 0 18px #2ce3ca28}header p{letter-spacing:.21em;text-transform:uppercase;font-size:10px}main{max-width:1800px;padding:20px clamp(10px,2vw,30px)}.toolbar,.panel{background:linear-gradient(155deg,#222222,#171717);border:1px solid #4c4c4c;box-shadow:inset 0 1px #ffffff12,0 9px 24px #0006;border-radius:11px}.toolbar{position:relative;gap:14px;padding:16px}.toolbar:before{content:'PERFORMANCE CONTROL';font-size:9px;letter-spacing:.22em;color:#f9b86c;width:100%;font-weight:700}button,select{background:linear-gradient(#393939,#232323);border:1px solid #626262;border-radius:5px;box-shadow:inset 0 1px #ffffff14,0 2px 4px #0007;font-weight:650}button:hover{background:#444444}button.primary{background:linear-gradient(#686868,#3e3e3e);border-color:#c1c1c1}.status{background:#151515;border:1px solid #626262;border-radius:4px;padding:9px 12px;letter-spacing:.03em}.panel h3{font-size:13px;letter-spacing:.15em}.banks{display:flex;flex-direction:column;gap:12px}.bank{position:relative;background:linear-gradient(110deg,#232323 0%,#1a1a1a 52%,#232323 100%);border:1px solid #5d5d5d;border-left:5px solid var(--bank-accent,#ffae4c);border-radius:9px;padding:14px 16px;box-shadow:inset 0 1px #ffffff1b,0 10px 22px #0009}.bank:before{content:'';position:absolute;inset:0;pointer-events:none;border-radius:8px;background:repeating-linear-gradient(90deg,transparent 0,transparent 23px,#ffffff02 24px)}.bankHead{position:relative;display:flex;align-items:center;border-bottom:1px solid #444444;padding-bottom:10px;margin-bottom:12px}.bankHead h2{font-size:18px;letter-spacing:.12em}.bankHead h2 small{display:block;font-size:10px;letter-spacing:.15em;color:#b3b3b3;margin-top:4px;font-weight:500}.bankHead .tag{margin-right:12px}.rackBody{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,325px);gap:15px}.slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.slot{display:flex;flex-direction:column;align-items:stretch;gap:7px;padding:10px;background:linear-gradient(145deg,#2e2e2e,#1a1a1a);border:1px solid #484848;box-shadow:inset 0 1px #ffffff12;border-radius:7px}.slotTop{display:flex;justify-content:space-between;align-items:center;gap:8px}.slotNumber{color:#f5b769;font-size:10px;letter-spacing:.12em;font-weight:800}.slot input[type=checkbox]{appearance:none;width:17px;height:17px;background:#111111;border:1px solid #787878;border-radius:50%;margin:0;box-shadow:inset 0 2px 5px #000}.slot input[type=checkbox]:checked{background:#c3c3c3;border-color:#e5e5e5;box-shadow:0 0 11px #c3c3c39c,inset 0 0 0 4px #3c3c3c}.slot select{width:100%;font-size:11px;min-width:0;padding:7px 5px;background:#1a1a1a}.slot button{font-size:10px;padding:6px}.bankControl{background:#161616;border:1px solid #474747;border-radius:7px;padding:12px}.bankControl h4{font-size:10px;letter-spacing:.18em;color:#ffb968;margin:0 0 10px}.bus{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0;padding:0;border:0}.bus label{font-size:10px;letter-spacing:.04em}.bus label span{font-size:10px}.insert{border-top:1px solid #474747;padding-top:12px;margin-top:12px}.insert select{font-size:11px}.meter{height:9px;background:#0d0d0d;border:1px solid #3f3f3f}.meter i{background:linear-gradient(90deg,#969696,#9de478,#ffb45b)}.meters{gap:10px}.rackScrews{display:flex;gap:8px;margin-left:8px}.screw{display:inline-block;width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,#a3afba,#313131);border:1px solid #767676;position:relative}.screw:after{content:'';position:absolute;top:3px;left:1px;width:5px;height:1px;background:#292929;transform:rotate(-35deg)}.overview{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,390px);gap:12px}.overview .panel{margin:0}.scope{width:100%;height:115px;background:#101010;border:1px solid #5c5c5c;border-radius:5px;display:block}.scopeLabel{font-size:9px;letter-spacing:.18em;color:#bebebe;margin:0 0 8px}.lower{grid-template-columns:repeat(2,minmax(0,1fr))}.lower .panel{padding:16px}.key{flex-basis:49px;height:126px}.key.sharp{height:85px}.steps{grid-template-columns:repeat(16,minmax(0,1fr))}.steps button{font-size:10px;padding:10px 0}.rackIntro{color:#a8b9c8;font-size:12px;line-height:1.6;margin:0 0 12px}.legend{display:flex;align-items:center;gap:7px;color:#a4a4a4;font-size:10px;letter-spacing:.1em}.legendDot{width:7px;height:7px;border-radius:50%;background:#c1c1c1;box-shadow:0 0 9px #c1c1c1}.bankControl input[type=range]{accent-color:var(--bank-accent,#ffae4c)}@media(max-width:1050px){.rackBody{grid-template-columns:1fr}.bankControl{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center}.bankControl h4{grid-column:1/-1;margin:0}.insert{margin:0;padding:0;border:0}.steps{grid-template-columns:repeat(8,1fr)}}@media(max-width:700px){.slots{grid-template-columns:repeat(2,minmax(0,1fr))}.overview{grid-template-columns:1fr}.lower{grid-template-columns:1fr}.bankControl{display:block}.insert{border-top:1px solid #474747;padding-top:10px;margin-top:10px}.bankHead h2{font-size:15px}.bankHead .tag{font-size:9px}.bank{padding:12px}.toolbar{gap:9px}.steps{grid-template-columns:repeat(8,1fr)}}
+
+/* P04 — compact warm graphite hardware styling; all P03 controls and DSP retained */
+:root{--bg:#090806;--panel:#14110f;--edge:#40352c;--text:#e9e0d5;--muted:#ad9d8c;--teal:#c7a26b;--amber:#eeb36b}
+body{background:radial-gradient(ellipse at 52% -12%,#251c16 0%,#100e0c 42%,#080706 100%);color:var(--text);font-size:12px}
+header{padding:11px max(12px,2vw);background:linear-gradient(100deg,#211a15,#100e0c);border-bottom:1px solid #85552c;box-shadow:0 4px 18px #0009}
+header h1{font-size:clamp(22px,2.7vw,34px);font-weight:580;letter-spacing:.105em;text-shadow:none}
+header p{font-size:9px;letter-spacing:.15em;margin-top:2px}
+main{max-width:1800px;padding:10px clamp(8px,1.3vw,20px)}
+.toolbar,.panel{background:linear-gradient(155deg,#1b1612,#100e0c);border-color:#40352b;box-shadow:inset 0 1px #ffffff0c,0 5px 14px #0006;border-radius:7px}
+.toolbar{gap:9px;padding:9px;margin-bottom:10px}.toolbar:before{font-size:8px;letter-spacing:.15em}
+button,select{background:linear-gradient(#30271f,#1a1612);border-color:#544638;color:#e9ddcf;border-radius:4px;padding:6px 8px;font-weight:500;font-size:11px}
+button:hover{background:#403023;border-color:#ba8750}button.primary{background:linear-gradient(#82552b,#49301c);border-color:#b98648}
+button.active{background:#704923}.status{background:#18140f;border-color:#66502f;color:#d5b47f;padding:6px 8px;font-size:10px}
+input,select,button{accent-color:#c89557}#tempo{background:#201914!important;border-color:#594633!important;padding:5px!important;color:#ead6c0!important}
+.banks{gap:11px}.bank{background:linear-gradient(110deg,#1c1713 0%,#100e0c 55%,#1a1511 100%);border:1px solid #47382b;border-left:3px solid var(--bank-accent,#e1a35d);border-radius:7px;padding:9px 11px;box-shadow:inset 0 1px #ffffff0d,0 5px 15px #0009}
+.bank:before{opacity:.4}.bankHead{gap:7px;border-bottom:1px solid #3e3025;padding-bottom:5px;margin-bottom:7px}
+.bankHead h2{font-family:'Segoe UI Light','Helvetica Neue',Arial,sans-serif;font-weight:300;font-size:15px;letter-spacing:.12em}
+.bankHead h2 small{font-size:8px;font-weight:300;letter-spacing:.12em;color:#a99b8b;margin-top:1px}
+.bankHead .tag{margin-right:7px}.tag{font-size:9px;color:#d4ad75}.rackScrews{gap:6px;margin-left:3px}.screw{width:7px;height:7px;background:linear-gradient(135deg,#897564,#30251c);border-color:#79634d}.screw:after{top:2px;left:1px;width:4px}
+.rackBody{grid-template-columns:minmax(0,1fr) minmax(225px,270px);gap:9px}
+.slots{gap:5px}.slot{gap:4px;padding:6px;background:linear-gradient(145deg,#211b16,#13100e);border-color:#403328;border-radius:5px;box-shadow:inset 0 1px #ffffff08}
+.slotTop{gap:4px}.slotNumber{font-size:9px;font-weight:500;color:#d9a96b}.slot input[type=checkbox]{width:14px;height:14px;background:#100e0b;border-color:#8a6e4f}.slot input[type=checkbox]:checked{background:#e0ad66;border-color:#ffcb84;box-shadow:0 0 7px #e0ad6680,inset 0 0 0 3px #53391e}
+.slot select{background:#15110e;border-color:#4a392b;padding:5px 4px;font-size:10px}.slot button{padding:4px;font-size:9px}
+.bankControl{background:#14110e;border-color:#403126;border-radius:5px;padding:7px}.bankControl h4{font-size:9px;letter-spacing:.12em;color:#dcb27c;margin-bottom:5px;font-weight:500}
+.bus{gap:3px}.bus label,.bus label span{font-size:9px}.insert{border-top-color:#403126;padding-top:6px;margin-top:6px;gap:4px}.insert select{font-size:10px;padding:5px}
+.rotary-control{min-width:46px;gap:2px;margin:1px auto 0}.rotary-dial{width:44px;height:44px;box-shadow:0 2px 6px #000a,0 0 0 1px #68503a;background:conic-gradient(from 225deg,var(--rotary-accent,#e2a762) 0deg,var(--rotary-accent,#e2a762) var(--sweep,135deg),#382c23 var(--sweep,135deg),#382c23 270deg,transparent 270deg)}
+.rotary-dial:before{inset:5px;background:radial-gradient(circle at 35% 25%,#6c5846 0%,#35291f 40%,#16110d 86%);box-shadow:inset 0 1px 3px #ffffff19,inset 0 -3px 5px #000a,0 0 0 1px #1c1510}
+.rotary-needle:after{left:calc(50% - 1px);top:7px;width:2px;height:11px}.rotary-readout{font-size:9px;color:#e1c5a3;min-height:11px}
+.toolbar .rotary-dial{width:42px;height:42px}.toolbar .rotary-needle:after{top:7px}.toolbar .rotary-control{min-width:45px}
+.lower{gap:10px;margin-top:10px}.lower .panel{padding:10px}.panel h3{font-size:11px;margin-bottom:7px;letter-spacing:.1em}.controls{gap:5px}.overview{gap:10px}.overview .panel{padding:10px}
+.scope{height:84px;background:#100e0a;border-color:#6a5234}.scopeLabel{font-size:8px;color:#d8b17c;margin-bottom:5px}.rackIntro{font-size:10px;line-height:1.4;margin-bottom:7px;color:#b7a595}.legend{font-size:9px;color:#aa967f}.legendDot{background:#e2ae6b;box-shadow:0 0 6px #e2ae6b}
+.key{flex-basis:41px;height:98px;background:linear-gradient(#f0e8dc,#b6a89a);color:#211811;border-color:#e7d7c5}.key.sharp{height:68px;background:linear-gradient(#524135,#1b1612)}.keys{gap:3px;padding:5px 0}.steps{gap:3px}.steps button{padding:7px 0}.steps button.on{background:#76512d;border-color:#d4a15d}.meter{height:7px;background:#100d0a;border-color:#49382a}.meter i{background:linear-gradient(90deg,#b78248,#dfb976,#f3d29b)}.meters{gap:6px}.footer{font-size:10px;padding:10px 3px}
+@media(max-width:1050px){.rackBody{grid-template-columns:1fr}.bankControl{gap:7px}}
+@media(max-width:700px){.bank{padding:8px}.bankHead h2{font-size:13px}.rotary-dial{width:42px;height:42px}.rotary-control{min-width:43px}.slot{padding:5px}.toolbar{gap:6px}.slots{gap:5px}.key{flex-basis:38px}}
+
+/* P13 sequencer controls: consistent baseline and wrapping within one toolbar */
+.performanceSeq .bankSeqTop{display:flex;align-items:center;justify-content:flex-start;gap:9px 12px;flex-wrap:wrap}
+.performanceSeq .bankSeqTop>label{display:inline-flex;align-items:center;gap:6px;margin:0;white-space:nowrap}
+.performanceSeq .bankSeqTop>button{align-self:center;margin:0}
+.performanceSeq .bankSeqTop #seqNote{max-width:none;min-width:125px}
+.performanceSeq .bankSeqTop #gate{width:110px}
+.performanceSeq .seqHeadingOnly{margin-bottom:4px}
+</style><style>
+/* P03 hardware rotary controls: native range remains the parameter source. */
+input[type=range].rotary-source{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;overflow:hidden!important}
+.rotary-control{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;min-width:68px;margin:4px auto 0;touch-action:none;user-select:none}
+.rotary-dial{width:65px;height:65px;border-radius:50%;position:relative;cursor:ns-resize;touch-action:none;background:conic-gradient(from 225deg,var(--rotary-accent,#ffb85d) 0deg,var(--rotary-accent,#ffb85d) var(--sweep,135deg),#363636 var(--sweep,135deg),#363636 270deg,transparent 270deg);box-shadow:0 4px 10px #000a,0 0 0 1px #595959}
+.rotary-dial:before{content:'';position:absolute;inset:6px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#6a6a6a 0%,#383838 40%,#191919 85%);box-shadow:inset 0 2px 4px #ffffff23,inset 0 -4px 7px #000a,0 0 0 2px #131313}
+.rotary-needle{position:absolute;inset:0;transform:rotate(var(--angle,-135deg));pointer-events:none}
+.rotary-needle:after{content:'';position:absolute;left:calc(50% - 2px);top:10px;width:4px;height:17px;border-radius:3px;background:var(--rotary-accent,#ffb85d);box-shadow:0 0 7px var(--rotary-accent,#ffb85d)}
+.rotary-dial:focus-visible{outline:2px solid #fff;outline-offset:5px}
+.rotary-readout{font:700 11px ui-monospace,Consolas,monospace;color:#c9ecdf;min-height:14px;letter-spacing:.02em}
+.bus{align-items:start}.bus label{align-items:center;text-align:center}.controls label:has(.rotary-control),.toolbar label:has(.rotary-control){align-items:center}.toolbar .rotary-dial{width:55px;height:55px}.toolbar .rotary-needle:after{top:8px}
+@media(max-width:700px){.rotary-dial{width:58px;height:58px}.rotary-control{min-width:55px}}
+
+/* P05 compact warm performance layout */
+.toolbar{align-items:center;gap:7px;padding:7px 9px}.toolbar:before{width:auto;min-width:100%;margin-bottom:0}
+.masterStrip{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;width:100%;padding:7px 5px 1px;border-top:1px solid #51402f}
+.stripTitle{font-size:9px;letter-spacing:.16em;color:#e2b67c;min-width:90px}
+.masterStrip label{font-size:9px;letter-spacing:.08em;min-width:66px;align-items:center;text-align:center}
+.masterStrip .rotary-dial{width:40px;height:40px}.masterStrip .rotary-control{min-width:48px;margin:0}.masterStrip .rotary-needle:after{top:7px}
+.bankHead{margin:0 0 4px;padding:0 0 4px;border-bottom:1px solid #30271f;min-height:18px}
+.bankHead h2{font-size:12px;font-weight:300;line-height:1.1;letter-spacing:.1em}.bankHead h2 small{display:inline;margin-left:9px;font-size:7px;font-weight:300;letter-spacing:.08em}
+.bankHead .tag{font-size:8px}.bank{padding:7px 9px}.rackBody{grid-template-columns:minmax(0,1fr) minmax(198px,230px);gap:7px}
+.bankControl{padding:5px}.bankControl h4{font-size:8px;margin-bottom:3px}.bankControl .rotary-dial{width:38px;height:38px}.bankControl .rotary-control{min-width:40px;gap:1px}.bankControl .rotary-needle:after{top:6px;height:10px}.bankControl .rotary-readout{font-size:8px}.bus{gap:2px}
+.slot{padding:4px 5px;gap:3px}.slot button{font-size:8px;padding:3px}.slot select{font-size:9px;padding:4px}
+.lower{grid-template-columns:repeat(2,minmax(0,1fr))}.performanceSeq{margin-top:11px;padding:11px;background:linear-gradient(150deg,#1b1511,#0e0c0a);border-color:#59412e}
+.seqTop{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-bottom:10px}.seqTop>div{flex:1;min-width:220px}.seqTop h3{margin:0 0 4px;font-size:12px}.seqTop label{font-size:9px}.seqTop .rotary-dial{width:38px;height:38px}.seqTop .rotary-control{min-width:42px;margin:0}
+.seqScroll{overflow-x:auto;padding:2px 0 6px}.performanceSeq #steps{display:none}
+.stepLanes{display:grid;grid-template-columns:repeat(16,minmax(58px,1fr));gap:5px;min-width:960px}
+.stepColumn{background:linear-gradient(#241d17,#120f0c);border:1px solid #4a3828;border-radius:5px;padding:5px 3px;text-align:center;display:flex;flex-direction:column;gap:5px;align-items:stretch}
+.stepColumn.play{border-color:#eab76b;box-shadow:inset 0 0 0 1px #bb7c36,0 0 12px #c18b3b33}.stepColumn button{padding:5px 1px;font-size:10px}.stepColumn button.on{background:#80552e;border-color:#f0b768;color:#fff1db}
+.stepColumn label{font-size:8px;color:#cbb7a1;gap:2px}.stepColumn select{font-size:10px;width:100%;padding:4px 1px;background:#17120f}.stepColumn input[type=range]{width:100%;height:16px;accent-color:#e3a55b}.stepColumn output{font-size:9px;color:#e8c08d}
+@media(max-width:700px){.lower{grid-template-columns:1fr}.rackBody{grid-template-columns:1fr}.bankHead h2 small{display:block;margin-left:0}.masterStrip{justify-content:space-around}}
+
+/* P06: black chassis, bank-colour full outlines, compact engine cartridges */
+:root{--bg:#050505;--panel:#0b0b0c;--edge:#303032;--text:#e9e8e5;--muted:#a9a7a4;--teal:#f3bd72;--amber:#ffbe72}
+html,body{background:#050505!important;color:#e9e8e5}
+header{background:#080809!important;border-color:#444044!important;box-shadow:none!important;padding:10px 18px!important}
+header h1{font-weight:350!important;font-size:clamp(12px,1.4vw,16px)!important;text-shadow:none!important}
+
+main{padding:10px 12px!important}
+.toolbar,.panel,.overview .panel,.performanceSeq{background:#0b0b0c!important;border-color:#343435!important;box-shadow:none!important}
+.toolbar{gap:6px!important}.toolbar:before{color:#c7b9a8!important}
+button,select{background:#181819!important;color:#e7e5e1!important;border-color:#414143!important;box-shadow:none!important}
+button:hover{background:#242426!important;border-color:#d0aa77!important}
+button.primary{background:#32271b!important;border-color:#aa8758!important}
+button.active{background:#46311c!important;border-color:#d7a45d!important}
+.status{background:#10100f!important;border-color:#585048!important;color:#ead5b6!important}
+#tempo{background:#151515!important;border-color:#484848!important;color:#f0ede8!important}
+.banks{gap:10px!important}
+.bank{background:#09090a!important;border:1px solid var(--bank-accent)!important;border-left-width:2px!important;box-shadow:inset 0 1px #ffffff08,0 3px 10px #0009!important;padding:6px 8px!important}
+.bank:before{display:none!important}
+.bankHead{border-color:#252526!important;padding-bottom:3px!important;margin-bottom:5px!important}
+.bankHead h2{font-size:14px!important;font-weight:250!important;letter-spacing:.1em!important}
+.bankHead h2 small{font-size:9px!important;font-weight:300!important;color:#a4a2a0!important}
+.bankHead .tag{font-size:10px!important;color:#c8c5bf!important}
+.rackBody{grid-template-columns:minmax(0,1fr) 205px!important;gap:7px!important}
+.slots{grid-template-columns:repeat(8,minmax(0,1fr))!important;gap:4px!important}
+.slot{min-width:0!important;padding:4px 3px!important;gap:3px!important;background:#101011!important;border:1px solid #303032!important;border-radius:4px!important;box-shadow:none!important}
+.slotTop{gap:2px!important}.slotNumber{font-size:8px!important;font-weight:350!important;color:#c9c6c0!important;letter-spacing:0!important}
+.slot input[type=checkbox]{width:12px!important;height:12px!important;background:#080808!important;border-color:#777!important}
+.slot input[type=checkbox]:checked{background:#d9b47c!important;border-color:#f0d2a5!important;box-shadow:0 0 6px #d9b47c70!important}
+.slot select{font-size:9px!important;text-transform:uppercase!important;padding:3px 1px!important;background:#171718!important;border-color:#39393a!important;min-width:0!important;letter-spacing:-.03em}
+.slot button{font-size:8px!important;padding:3px 1px!important;letter-spacing:-.02em}
+.bankControl{background:#0d0d0e!important;border-color:#2c2c2d!important;padding:5px!important}
+.bankControl h4{color:#d2c1a9!important;font-weight:350!important}
+.bankControl .rotary-dial{width:35px!important;height:35px!important}
+.bankControl .rotary-control{min-width:37px!important}
+.masterStrip{border-color:#343435!important;gap:5px 8px!important}
+.stripTitle{color:#cfc4b5!important}.masterStrip .rotary-dial{width:37px!important;height:37px!important}
+.scope{background:#070707!important;border-color:#3e4b43!important}.scopeLabel{color:#c1b4a0!important}
+.performanceSeq{background:#0b0b0c!important}.stepColumn{background:#111112!important;border-color:#333335!important}
+.stepColumn.play{border-color:#e2b778!important;box-shadow:0 0 8px #d9a35a35!important}
+.stepColumn button.on,.steps button.on{background:#46331c!important;border-color:#d1a76b!important}
+.stepColumn select{background:#171718!important;text-transform:uppercase!important}.stepColumn label{color:#aaa8a5!important}
+.rotary-dial{background:radial-gradient(circle at 40% 30%,#373739,#171719 70%)!important;border-color:#646466!important;box-shadow:inset 0 1px #ffffff1c,0 2px 5px #000!important}
+.rotary-readout{color:#ded6c9!important}
+.meter{background:#080808!important;border-color:#333!important}.meter i{background:linear-gradient(90deg,#7cbd9e,#d8c07a,#e6a76c)!important}
+.key{background:linear-gradient(#e8e7e4,#a9a7a2)!important;color:#161616!important;border-color:#b5b4b0!important}.key.sharp{background:linear-gradient(#39393b,#0a0a0b)!important}
+@media(max-width:1180px){.slots{grid-template-columns:repeat(4,minmax(0,1fr))!important}.rackBody{grid-template-columns:minmax(0,1fr) 195px!important}}
+@media(max-width:720px){.rackBody{grid-template-columns:1fr!important}.slots{grid-template-columns:repeat(4,minmax(0,1fr))!important}.bankControl{display:block!important}}
+@media(max-width:370px){.slots{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+
+/* P07 requested layout adjustments; original header untouched. */
+select,select option{text-transform:uppercase!important}
+.masterStrip .modulationTitle{margin-left:12px}
+.masterStrip label:has(#lfoRate),.masterStrip label:has(#lfoDepth),.masterStrip label:has(#lfoDest),.masterStrip label:has(#lfoWave){min-width:66px}
+.masterStrip .rotary-dial{width:37px!important;height:37px!important}
+.performanceSeq{margin-top:0!important;margin-bottom:12px!important}
+.keys{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
+.key{flex-shrink:0}
+header{padding-left:0!important;padding-right:0!important}.header-inner{max-width:1800px;margin:0 auto;padding:0 22px}/* Align header lettering with the content inside the panels, not merely their borders. */
+.lower{display:block!important}.lower>.panel{width:100%!important;max-width:none!important}
+.keys{width:100%!important;max-width:100%!important}
+.toolbar>label:has(#tempo){align-self:center!important;justify-content:center!important;margin:0!important}
+#panic,#killAudio{border-color:#a56851!important;color:#f4c7b2!important}
+/* P09: eight-bank performance grid and true bank oscilloscope layout */
+.overview{display:block!important;margin-bottom:12px}.overview>.panel:first-child{display:none}.overview>.panel:last-child{width:100%;margin:0!important;padding:10px!important}
+.bankScopeGrid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;margin-bottom:10px}.bankScopeTile{background:#101011;border:1px solid var(--bank-accent);border-radius:5px;padding:6px;min-width:0}.bankScopeTile strong{font-size:10px;letter-spacing:.08em;font-weight:400;color:var(--bank-accent)}.bankScopeTile canvas{display:block;width:100%;height:80px;background:#070707;border:1px solid #343435;border-radius:3px;margin-top:4px}.overview .scope{height:55px!important}
+#rackInfoBottom{display:block!important;margin-top:12px;margin-bottom:10px}#rackInfoBottom.panel{padding:10px!important}
+.performanceSeq .seqScroll{display:none!important}.performanceSeq>.note{display:none}.bankSeqTop{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:8px 0 12px}.bankSeqTop label{flex-direction:row;align-items:center;gap:6px}.bankSeqTop select{max-width:110px}.bankSeqGrid{display:grid;grid-template-columns:104px repeat(16,minmax(0,1fr));gap:4px;align-items:center;overflow-x:auto}.bankSeqGrid .seqHead{text-align:center;color:#aaa8a5;font-size:9px}.bankSeqRowLabel{display:flex;align-items:center;gap:5px;font-size:10px;white-space:nowrap}.bankSeqCell{min-width:0;min-height:28px;padding:0!important;background:#151516!important;border:1px solid #444!important;border-radius:3px!important;cursor:pointer}.bankSeqCell.on{background:var(--bank-accent)!important;border-color:var(--bank-accent)!important;box-shadow:inset 0 0 0 2px #1c1814!important}.bankSeqCell.play{outline:2px solid #fff2d6;outline-offset:0}.bankSeqCell.selected{box-shadow:inset 0 0 0 2px #e8e3dc!important}.bankSeqCell.rest{opacity:.3}.bankSeqEditor{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px;padding:10px;border:1px solid #343435;border-radius:5px;background:#101011}.bankSeqEditor label{display:flex;flex-direction:row;align-items:center;gap:6px}.bankSeqEditor input[type=number]{width:65px;background:#171718;color:#e9e8e5;border:1px solid #444;padding:5px}.bankSeqEditor input[type=range]{width:95px}.bankSeqHelp{font-size:10px;color:#aaa8a5;margin-top:9px}.bankSeqRowLabel button{padding:4px!important;font-size:9px!important}.bankSeqRowLabel button.muted{color:#f1a6a6!important;border-color:#a65c5c!important}
+@media(max-width:850px){.bankScopeGrid{grid-template-columns:repeat(8,minmax(85px,1fr));overflow-x:auto}.bankSeqGrid{min-width:780px}.bankSeqWrap{overflow-x:auto}}@media(max-width:440px){.bankScopeGrid{grid-template-columns:repeat(8,minmax(85px,1fr))}.bankScopeTile canvas{height:58px}}
+/* P10: eight horizontal engine-slot scopes and slim master trace */
+.overview{display:block!important}.overview>.panel{width:100%!important;margin-bottom:10px!important}
+.bankScopeGrid{grid-template-columns:repeat(8,minmax(0,1fr))!important;gap:5px!important;overflow-x:auto}
+.bankScopeTile{padding:4px!important}.bankScopeTile strong{font-size:9px!important;white-space:nowrap}
+.bankScopeTile canvas{height:75px!important}.overview #scope{height:38px!important}
+.scopeSelector{display:flex;align-items:center;gap:9px;margin-bottom:9px;flex-wrap:wrap}.scopeSelector select{font-size:10px}
+@media(max-width:950px){.bankScopeGrid{grid-template-columns:repeat(8,minmax(94px,1fr))!important}}
+
+/* P11: oscilloscope visibility and graphite/amber consistency */
+#engineOscilloscopePanel{width:100%!important;display:block!important;min-height:165px!important;border:1px solid #795937!important;padding:12px!important}
+#engineOscilloscopePanel .scopeSelector{justify-content:space-between!important;border-bottom:1px solid #4d3827;padding-bottom:8px;margin-bottom:12px}
+#engineOscilloscopePanel .bankScopeGrid{display:grid!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;width:100%!important;gap:7px!important;overflow-x:auto!important;margin:0 0 12px!important}
+#engineOscilloscopePanel .bankScopeTile{min-width:75px!important;border:1px solid #987047!important;background:#0c0b0a!important;padding:5px!important}
+#engineOscilloscopePanel .bankScopeTile canvas{display:block!important;width:100%!important;height:92px!important;min-height:92px!important;background:#070807!important;border:1px solid #765a3b!important}
+#engineOscilloscopePanel #scope{display:block!important;width:100%!important;height:42px!important;border-color:#987047!important}
+#engineOscilloscopePanel>.scopeLabel{display:block!important;margin:5px 0 7px!important;color:#e6b879!important}
+.rotary-dial{background:radial-gradient(circle at 40% 30%,#514032,#211912 70%)!important;box-shadow:inset 0 1px #e8b77825,0 2px 5px #000!important}
+.rotary-dial:before{background:radial-gradient(circle at 35% 25%,#69513a,#2a2018 60%,#100d0b)!important}
+#tempo{background:#17120f!important;border-color:#725132!important;color:#f0ddc5!important}
+@media(max-width:820px){#engineOscilloscopePanel .bankScopeGrid{grid-template-columns:repeat(8,minmax(92px,1fr))!important}}
+</style><style>/* P12: align tempo with the main performance buttons */
+.toolbar>label.tempoControl{display:flex!important;flex-direction:row!important;align-items:center!important;align-self:center!important;justify-content:center!important;gap:7px!important;margin:0!important;height:32px!important;color:#d7c4ac!important;font-size:10px!important;letter-spacing:.07em!important}
+.toolbar>label.tempoControl #tempo{height:31px!important;min-height:31px!important;padding:5px 7px!important;line-height:19px!important;background:#151515!important;border:1px solid #48413a!important;color:#f0ede8!important}
+</style><style id="p15b02-visibility">
+/* P15 Build 02: discoverable editor and compact unclassified horizontal Patch Atlas. */
+#banks .slot .engine-edit{display:block!important;width:100%!important;min-height:32px!important;padding:7px 5px!important;font-size:12px!important;font-weight:800!important;letter-spacing:.06em!important;color:#16100a!important;background:#e6ae68!important;border:2px solid #ffd49b!important;border-radius:4px!important;box-shadow:0 0 0 1px #6c451d!important;cursor:pointer!important}
+#banks .slot .engine-edit:hover,#banks .slot .engine-edit:focus-visible{background:#ffd18e!important;border-color:#fff0cf!important;color:#110b05!important}
+#banks .slot.engine-selected .engine-edit{background:#ffd38c!important;box-shadow:0 0 0 2px #b67b3e!important}
+#p14-atlas .p15-patch-strip{display:flex;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;padding:8px 2px 12px;scrollbar-width:thin;align-items:stretch}
+#p14-atlas .p15-patch-strip .p15-patch-tab{flex:0 0 auto;min-width:118px;max-width:190px;white-space:normal;text-align:center;min-height:38px;padding:8px 11px!important;font-size:11px!important;line-height:1.25!important}
+#p14-atlas .p15-patch-strip .p15-patch-tab.selected{border-color:#ffcd8c!important;background:#4b321e!important;color:#ffe0b4!important}
+#p14-atlas .p15-atlas-detail{margin:0!important;padding:8px 10px!important;border:1px solid #51402e!important;background:#101011!important}
+#p14-atlas .p15-atlas-detail summary{cursor:pointer;font-size:11px;letter-spacing:.06em}
+#p14-atlas .p15-atlas-detail:not([open]){padding:7px 10px!important}
+#p14-atlas #p15-patch-content{padding:7px 0 2px}
+</style><style id="p16-visibility-and-sequencing">
+/* P16: EDIT is a full-width, high contrast, readable control even in 8-column racks. */
+#banks .slot button.engine-edit{display:flex!important;align-items:center!important;justify-content:center!important;min-height:46px!important;width:100%!important;padding:10px 5px!important;font-size:clamp(13px,1.05vw,16px)!important;font-weight:900!important;line-height:1.2!important;letter-spacing:.04em!important;color:#0b0907!important;background:#ffbe69!important;border:2px solid #ffe4b3!important;border-radius:5px!important;text-shadow:none!important;box-shadow:0 0 0 1px #98612b,0 2px 8px #000b!important;white-space:nowrap!important}
+#banks .slot button.engine-edit:hover,#banks .slot button.engine-edit:focus-visible{background:#ffda9b!important;color:#090806!important}
+#banks .slot.engine-selected button.engine-edit{background:#ffe1a7!important;outline:2px solid #e8a656!important;outline-offset:1px!important}
+.p16-target-panel{border:1px solid #805b35;border-radius:6px;background:#0e0d0c;padding:10px;margin:10px 0}
+.p16-target-head{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-bottom:9px;color:#f1c48d;font-size:11px;letter-spacing:.06em}
+.p16-target-head strong{margin-right:auto}.p16-target-head button{font-size:11px!important;min-height:30px}
+.p16-target-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px}
+.p16-engine-target{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:44px!important;padding:6px 2px!important;font-size:10px!important;border:1px solid #54412d!important;white-space:nowrap}
+.p16-engine-target b{font-size:10px;color:#aaa}.p16-engine-target.active{background:#674322!important;border-color:#e9ae65!important;color:#ffe4bc!important}.p16-engine-target.active b{color:#ffe4bc}
+.p16-lane-label{display:flex;flex-direction:row;align-items:center;gap:9px;margin-top:10px;color:#d7b384;font-size:10px}.p16-lane-label select{max-width:330px;width:100%;font-size:10px}
+.p16-help{color:#bcb0a3;font-size:10px;line-height:1.5;margin:8px 0 0}
+@media(max-width:850px){.p16-target-grid{grid-template-columns:repeat(4,minmax(0,1fr))}#banks .slot button.engine-edit{font-size:14px!important;min-height:48px!important}}
+@media(max-width:420px){.p16-target-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style><style id="p16-edit-dsp-compact-correction">
+/* P16 Build 02: compact, readable amber-outline DSP edit controls. */
+#banks .slot button.engine-edit{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;min-height:23px!important;height:23px!important;padding:2px 3px!important;font-size:9px!important;font-weight:650!important;line-height:1!important;letter-spacing:0!important;white-space:nowrap!important;color:#efb36a!important;background:#09090a!important;border:1px solid #d99b52!important;border-radius:4px!important;box-shadow:none!important;text-shadow:none!important;outline:none!important}
+#banks .slot button.engine-edit:hover,#banks .slot button.engine-edit:focus-visible{color:#ffd18f!important;background:#1b130c!important;border-color:#ffd18f!important;outline:1px solid #d99b52!important;outline-offset:1px!important}
+#banks .slot.engine-selected button.engine-edit{color:#ffd08b!important;background:#1d140c!important;border:1px solid #e9ae64!important;box-shadow:inset 0 0 0 1px #684322!important;outline:none!important}
+@media(max-width:850px){#banks .slot button.engine-edit{font-size:9px!important;min-height:23px!important;height:23px!important}}
+</style><style id="p18-compact-dsp-rotaries">
+/* P18: rotary presentation for existing live DSP ranges; WebAudio and parameter events unchanged. */
+#banks .engine-editor{padding:6px!important;margin-top:4px!important;max-width:100%;}
+#banks .engine-editor h4{margin:0 0 5px!important;font-size:10px!important}
+#banks .engine-editor .edit-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(72px,1fr))!important;gap:4px!important;align-items:start!important}
+#banks .engine-editor .edit-grid label{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;text-align:center!important;gap:2px!important;min-width:0!important;min-height:56px!important;padding:3px 2px!important;font-size:8px!important;line-height:1.2!important;letter-spacing:0!important}
+#banks .engine-editor .edit-grid label:has(select){justify-content:space-between!important}
+#banks .engine-editor .edit-grid select{width:100%!important;min-width:0!important;font-size:9px!important;padding:3px 1px!important;max-height:25px!important}
+#banks .engine-editor .edit-grid input.p18-native-range{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+#banks .engine-editor .p18-mini-dial{display:block!important;position:relative!important;width:23px!important;height:23px!important;flex:none!important;border-radius:50%!important;cursor:ns-resize!important;touch-action:none!important;user-select:none!important;background:conic-gradient(from 225deg,#dba45f 0deg,#dba45f var(--p18-sweep),#252527 var(--p18-sweep),#252527 270deg,transparent 270deg)!important;border:1px solid #795a37!important;box-shadow:0 1px 3px #000!important}
+#banks .engine-editor .p18-mini-dial:before{content:'';position:absolute;inset:3px;border-radius:50%;background:radial-gradient(circle at 35% 25%,#353537,#181819 70%,#09090a)}
+#banks .engine-editor .p18-mini-dial:after{content:'';position:absolute;width:2px;height:7px;top:3px;left:calc(50% - 1px);background:#f6c58a;border-radius:2px;transform-origin:1px 8.5px;transform:rotate(var(--p18-turn));box-shadow:0 0 3px #e5a45a}
+#banks .engine-editor .p18-mini-dial:focus-visible{outline:2px solid #f6c58a!important;outline-offset:3px}
+#banks .engine-editor .edit-grid output{font-size:9px!important;line-height:1.1!important;min-height:10px!important}
+#banks .engine-editor>p.note{font-size:9px!important;margin:5px 0 0!important}
+</style><style id="p18b02-graphite-colour-restoration">
+/* Colour-only restoration: near-black graphite chassis, amber reserved for active accents. */
+#banks .engine-editor,#p17-atlas,#p14-atlas,#p14-matrix,#p14-logic,#p14-lab,
+.p15-workspace > .panel {background:#0b0b0d!important;}
+#banks .engine-editor .edit-grid label {background:#101012!important;}
+#banks .engine-editor .edit-grid select {background:#151517!important;}
+#banks .engine-editor .p18-mini-dial {border-color:#795a37!important;}
+#p17-details {background:#0d0d0f!important;}
+#p17-atlas .p17-line input,#p17-atlas .p17-line select {background:#111113!important;}
+#p17-atlas button {background:#141416!important;}
+#p17-atlas button:hover {background:#252527!important;}
+#p17-patches button.p17-picked {background:#30271d!important;}
+#p14-atlas .p15-atlas-detail {background:#101012!important;}
+</style><style id="p18-light-chassis-visual-test">
+/* Experimental light-chassis skin only. No audio or sequencing changes. */
+:root{color-scheme:light!important;--bg:#fff!important;--panel:#f7f7f7!important;--edge:#b8b8b8!important;--text:#171717!important;--muted:#444!important;--teal:#9b5c17!important;--amber:#ac661e!important}
+html,body{background:#fff!important;color:#151515!important}
+header{background:#fff!important;border-bottom-color:#bb873f!important}
+header h1,header h1 span{color:#111!important}
+header p,.note,.footer,.rackIntro,.legend,.tag,.scopeLabel,.stripTitle,.bankHead h2 small,.bankHead .tag{color:#333!important}
+.toolbar,.panel,.overview .panel,.performanceSeq,#engineOscilloscopePanel,#rackInfoBottom.panel{background:#fff!important;color:#111!important;border-color:#b9b9b9!important}
+.bank{background:#fff!important;color:#111!important}
+.slot,.bankControl,.bankSeqEditor,.stepColumn,.bankScopeTile,#engineOscilloscopePanel .bankScopeTile,.p16-target-panel,#p14-atlas .p15-atlas-detail,#p14-atlas #p15-patch-content{background:#f8f8f8!important;color:#151515!important;border-color:#b8b8b8!important}
+.slotNumber,.bankControl h4,.panel h3,.seqTop h3,.p16-target-head,.p16-lane-label{color:#222!important}
+button,select,input:not([type=range]):not([type=checkbox]),textarea{background:#fff!important;color:#111!important;border-color:#999!important}
+button:hover{background:#f1f1f1!important;color:#111!important}
+button.primary,button.active{background:#fff4e3!important;color:#111!important;border-color:#b47a35!important}
+.status,#tempo,.toolbar>label.tempoControl #tempo{background:#fff!important;color:#111!important;border-color:#aaa!important}
+label,.bankControl label,.bus label,.bus label span,.stepColumn label,.bankSeqHelp,.p16-help{color:#333!important}
+#banks .slot button.engine-edit,#banks .slot.engine-selected button.engine-edit{background:#fff!important;color:#945611!important;border-color:#b8792e!important}
+#banks .slot button.engine-edit:hover{background:#fff2df!important;color:#713c0a!important}
+#banks .engine-editor,.engine-editor,#p14-atlas,#p14-atlas .p15-patch-strip{background:#fff!important;color:#111!important}
+#banks .engine-editor .edit-grid label,#banks .engine-editor h4{color:#222!important}
+#banks .engine-editor .p18-mini-dial{background:conic-gradient(from 225deg,#c57c2b 0deg,#c57c2b var(--p18-sweep),#dadada var(--p18-sweep),#dadada 270deg,transparent 270deg)!important;border-color:#a6a6a6!important}
+#banks .engine-editor .p18-mini-dial:before{background:radial-gradient(circle at 35% 25%,#fff,#dedede 70%,#b9b9b9)!important}
+.rotary-dial{background:radial-gradient(circle at 40% 30%,#fff,#c9c9c9 70%)!important;border-color:#999!important}
+.rotary-dial:before{background:radial-gradient(circle at 35% 25%,#fff,#dedede 65%,#bcbcbc)!important}
+.rotary-readout,.stepColumn output{color:#252525!important}
+.bankSeqCell{background:#f1f1f1!important;border-color:#aaa!important}
+.bankSeqCell.on{background:#c78639!important;color:#111!important}
+.bankSeqRowLabel,.bankSeqGrid .seqHead{color:#222!important}
+#p14-atlas .p15-patch-strip .p15-patch-tab.selected{background:#fff0dc!important;color:#111!important}
+#p14-atlas .p15-atlas-detail summary{color:#222!important}
+#engineOscilloscopePanel .scopeSelector{border-color:#bbb!important}
+/* Oscilloscope canvases retain their dark display for trace contrast. */
+</style><style id="p18b07-vivid-amber-legibility">
+/* White chassis: more saturated amber typography with sufficient visual weight. */
+:root{--teal:#b85b00!important;--amber:#b85b00!important}
+header h1 span{color:#a84c00!important}
+.panel h3,.seqTop h3,.bankControl h4,.slotNumber,.scopeLabel,.stripTitle,.p16-target-head,.p16-lane-label{color:#b05200!important}
+#banks .slot button.engine-edit,#banks .slot.engine-selected button.engine-edit{color:#ae5000!important;border-color:#c46b00!important}
+#banks .engine-editor .p18-mini-dial{background:conic-gradient(from 225deg,#e27800 0deg,#e27800 var(--p18-sweep),#dadada var(--p18-sweep),#dadada 270deg,transparent 270deg)!important}
+</style></head><body><header><div class="header-inner"><h1>CONTINUUM <span style="color:var(--teal)">PARALLEL HYBRID ARCHITECTURE</span></h1></div></header><main>
+<div class="toolbar"><button class="primary" id="start">▶ ENABLE AUDIO</button><button id="panic" title="Stop all voices and sequencer">■ STOP SOUND</button><button id="killAudio" title="Immediately shut down the entire audio engine">⏻ KILL AUDIO</button><label class="tempoControl">TEMPO<input id="tempo" type="number" min="40" max="240" value="120" style="width:75px;background:#17120f;color:#f0ddc5;padding:8px;border:1px solid #725132;border-radius:4px"></label><button id="seq">▶ SEQUENCER</button><button id="export">↓ EXPORT PATCH</button><button id="import">↑ IMPORT PATCH</button><input id="file" type="file" accept="application/json,.json" hidden><span class="status" id="status">Audio disabled · Click Enable Audio</span><div class="masterStrip"><span class="stripTitle">MASTER OUTPUT</span><label>LEVEL<input id="master" type="range" min="0" max="100" value="55"></label><label>DRIVE<input id="drive" type="range" min="0" max="100" value="0"></label><label>DELAY MIX<input id="delayMix" type="range" min="0" max="65" value="12"></label><label>DELAY TIME<input id="delayTime" type="range" min="0.06" max="0.8" step="0.01" value="0.25"></label><label>FEEDBACK<input id="feedback" type="range" min="0" max="70" value="12"></label><span class="stripTitle modulationTitle">GLOBAL MODULATION</span><label>LFO rate (Hz)<input id="lfoRate" type="range" min="0.05" max="15" step="0.05" value="2"></label><label>LFO depth<input id="lfoDepth" type="range" min="0" max="100" value="20"></label><label>LFO destination<select id="lfoDest"><option value="filter">Bank filters</option><option value="amp">Bank amplitude</option><option value="pan">Bank pan</option></select></label><label>Waveform<select id="lfoWave"><option value="sine">Sine</option><option value="triangle">Triangle</option><option value="square">Square</option><option value="sawtooth">Sawtooth</option></select></label></div></div>
+<section class="panel performanceSeq" id="performanceSeq"><div class="seqTop"><div><h3>16-STEP PERFORMANCE SEQUENCER</h3><p class="note">Program each step’s pitch, gate and filter automation. Press PLAY in the top bar to hear the pattern.</p></div><label>ROOT NOTE<select id="seqNote"><option value="36">C2</option><option value="48" selected>C3</option><option value="60">C4</option><option value="43">G2</option></select></label><label>GATE LENGTH<input id="gate" type="range" min="10" max="95" value="55"></label><button id="demo" class="primary">✦ DEMO PATTERN</button><button id="clearSteps">CLEAR</button></div><div class="seqScroll"><div class="steps" id="steps"></div><div class="stepLanes" id="stepLanes"></div></div><p class="note">Each column: trigger toggle, note offset, filter cutoff automation. Filter values apply to all eight bank filters on that step.</p></section>
+<section class="overview"><div class="panel"><h3>8-BANK PARALLEL SYNTHESIS RACK · 64 ENGINE SLOTS</h3><p class="rackIntro">Eight stacked synthesis instruments, each containing eight selectable engines and an independent bank bus. Enable a slot, choose its sound engine, and press TEST. All enabled slots play together through the shared master mixer.</p><div class="legend"><span class="legendDot"></span> LIVE BANK BUS ACTIVITY</div><div class="meters" id="meters"></div></div><div class="panel"><p class="scopeLabel">MASTER AUDIO · LIVE OSCILLOSCOPE</p><canvas class="scope" id="scope" aria-label="Master waveform visualiser"></canvas><p class="note">Displays actual master audio waveform after audio is enabled.</p></div></section>
+<section class="banks" id="banks"></section>
+<section class="lower"><div class="panel"><h3>LIVE KEYBOARD</h3><p class="note">Touch or click keys to play all enabled slots simultaneously. Computer keys A W S E D F T G Y H U J K also work.</p><div class="keys" id="keys"></div><label>Octave<select id="octave"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></label></div></section>
+<p class="footer"><strong>Prototype scope:</strong> Functional Web Audio synthesis and routing with eight original lightweight DSP-inspired voice models (Acid, Hybrid, FM, Macro, Wavetable, Resonator, Additive, Cross-Mod), 64 assignable slots, eight bank buses, selectable per-bank insert processing, shared modulation, live keyboard, 16-step sequencer and JSON patch export/import. These are <strong>not</strong> ports of Open303, Surge XT, Dexed, Plaits, Vital or other third-party code. Those licensed DSP integrations are a later research and implementation stage. No source or functionality from Continuum Mosaic has been modified.</p></main>
+<script>
+'use strict';
+const TYPES=['Acid / 303-inspired','Hybrid subtractive','FM matrix','Macro wavefold','Spectral wavetable','Physical resonator','Additive harmonics','Cross modulation'];
+const defaults=()=>Array.from({length:8},(_,b)=>({level:70,pan:50,cutoff:78,insert:'none',slots:Array.from({length:8},(_,s)=>({on:b===0&&s===0,type:(b*2+s)%8}))}));
+let state={banks:defaults(),steps:Array.from({length:16},(_,i)=>i%4===0),master:55,tempo:120,lfoRate:2,lfoDepth:20,lfoDest:'filter',lfoWave:'sine',drive:0,delayMix:12,delayTime:.25,feedback:12,gate:55};
+let ctx,master,preMaster,delay,delayGain,feedbackNode,compressor,lfo,lfoGain,busNodes=[],seqTimer=null,stepPos=0,nextStepTime=0,voices=new Set(),held=new Map(),activeNotes=new Map();
+const $=id=>document.getElementById(id), clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function say(s){$('status').textContent=s}
+function buildUI(){let html='';const accents=['#d6a35f','#b6b5b2','#d6a35f','#b6b5b2','#d6a35f','#b6b5b2','#d6a35f','#b6b5b2'];for(let b=0;b<8;b++){let bank=state.banks[b];html+=`<article class="bank" style="--bank-accent:${accents[b]}"><div class="bankHead"><div class="rackScrews"><span class="screw"></span><span class="screw"></span></div><h2 style="margin-left:12px">BANK ${String(b+1).padStart(2,'0')}<small>PARALLEL SYNTHESIS VOICE RACK</small></h2><span class="tag">8 ENGINE SLOTS · BUS ${b+1}</span><button data-testbank="${b}">▶ PLAY BANK</button></div><div class="rackBody"><div class="slots">`;for(let s=0;s<8;s++){let slot=bank.slots[s];html+=`<div class="slot"><div class="slotTop"><span class="slotNumber">ENGINE ${String(s+1).padStart(2,'0')}</span><input aria-label="Bank ${b+1} slot ${s+1} enabled" type="checkbox" data-on="${b},${s}" ${slot.on?'checked':''}></div><select aria-label="Bank ${b+1} slot ${s+1} engine" data-type="${b},${s}">${TYPES.map((n,i)=>`<option value="${i}" ${slot.type===i?'selected':''}>${n}</option>`).join('')}</select><button data-test="${b},${s}">▶ AUDITION</button></div>`}html+=`</div><div class="bankControl"><h4>CHANNEL STRIP · BANK ${b+1}</h4><div class="bus"><label>LEVEL <span>${bank.level}%</span><input data-param="${b},level" type="range" min="0" max="100" value="${bank.level}"></label><label>PAN <span>${bank.pan-50}</span><input data-param="${b},pan" type="range" min="0" max="100" value="${bank.pan}"></label><label>FILTER <span>${bank.cutoff}%</span><input data-param="${b},cutoff" type="range" min="0" max="100" value="${bank.cutoff}"></label></div><div class="insert"><span class="tag">SIGNAL INSERT</span><select aria-label="Bank ${b+1} insert" data-insert="${b}">${[['none','Bypass'],['drive','Saturation'],['lowpass','Dark filter'],['highpass','Highpass'],['ring','Tremolo']].map(([v,n])=>`<option value="${v}" ${bank.insert===v?'selected':''}>${n}</option>`).join('')}</select></div></div></div></article>`} $('banks').innerHTML=html;$('meters').innerHTML=Array.from({length:8},(_,i)=>`<div class="meter"><i id="meter${i}"></i></div>`).join('');$('steps').innerHTML=state.steps.map((v,i)=>`<button data-step="${i}" class="${v?'on':''}">${i+1}</button>`).join('');let notes=Array.from({length:73},(_,n)=>n);$('keys').innerHTML=notes.map((n)=>`<button class="key ${[1,3,6,8,10].includes(n%12)?'sharp':''}" data-note="${n}">${['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'][n%12]}${Math.floor(n/12)+Number($('octave').value)}</button>`).join('');}
+function waveShape(amount){let a=1+amount*35,arr=new Float32Array(1024);for(let i=0;i<arr.length;i++){let x=i*2/(arr.length-1)-1;arr[i]=Math.tanh(a*x)/Math.tanh(a)}return arr}
+function makeAudio(){if(ctx)return;ctx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});preMaster=ctx.createGain();master=ctx.createGain();compressor=ctx.createDynamicsCompressor();compressor.threshold.value=-14;compressor.knee.value=12;compressor.ratio.value=8;compressor.attack.value=.003;compressor.release.value=.12;let driveNode=ctx.createWaveShaper();driveNode.curve=waveShape(0);driveNode.oversample='2x';preMaster.connect(driveNode);driveNode.connect(compressor);compressor.connect(master);master.connect(ctx.destination);delay=ctx.createDelay(1.5);delayGain=ctx.createGain();feedbackNode=ctx.createGain();preMaster.connect(delay);delay.connect(delayGain);delayGain.connect(compressor);delay.connect(feedbackNode);feedbackNode.connect(delay);busNodes=state.banks.map((bank,b)=>{let input=ctx.createGain(),filter=ctx.createBiquadFilter(),effect=ctx.createWaveShaper(),amp=ctx.createGain(),pan=ctx.createStereoPanner(),trem=ctx.createGain();filter.type='lowpass';effect.curve=waveShape(0);effect.oversample='2x';input.connect(filter);filter.connect(effect);effect.connect(trem);trem.connect(amp);amp.connect(pan);const trim=ctx.createGain();trim.gain.value=.42;pan.connect(trim);trim.connect(preMaster);return{input,filter,effect,trem,amp,pan,trim}});lfo=ctx.createOscillator();lfoGain=ctx.createGain();lfo.connect(lfoGain);lfo.start();window.__continuumDrive=driveNode;updateAudio();say('Audio running · 8 buses online')}
+let scopeAnalyser=null,scopeStarted=false;function startScope(){if(scopeStarted||!ctx||!master)return;scopeStarted=true;scopeAnalyser=ctx.createAnalyser();scopeAnalyser.fftSize=2048;master.connect(scopeAnalyser);const canvas=$('scope'),c=canvas.getContext('2d'),samples=new Uint8Array(scopeAnalyser.fftSize);function draw(){if(!scopeStarted||!ctx||ctx.state==='closed')return;requestAnimationFrame(draw);const dpr=Math.min(devicePixelRatio||1,2),w=canvas.clientWidth,h=canvas.clientHeight;if(canvas.width!==Math.floor(w*dpr)||canvas.height!==Math.floor(h*dpr)){canvas.width=w*dpr;canvas.height=h*dpr}c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle='#0c0a08';c.fillRect(0,0,w,h);c.strokeStyle='#3c3023';c.lineWidth=1;for(let x=0;x<w;x+=24){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke()}for(let y=0;y<h;y+=24){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke()}scopeAnalyser.getByteTimeDomainData(samples);c.strokeStyle='#e9b675';c.lineWidth=1.6;c.shadowColor='#c28b4b';c.shadowBlur=8;c.beginPath();for(let i=0;i<samples.length;i++){let x=i/(samples.length-1)*w,y=samples[i]/255*h;i?c.lineTo(x,y):c.moveTo(x,y)}c.stroke();c.shadowBlur=0}draw()}
+function updateAudio(){if(!ctx)return;let t=ctx.currentTime;master.gain.setTargetAtTime(state.master/100,t,.012);window.__continuumDrive.curve=waveShape(state.drive/100);delay.delayTime.setTargetAtTime(state.delayTime,t,.02);delayGain.gain.setTargetAtTime(state.delayMix/100,t,.02);feedbackNode.gain.setTargetAtTime(state.feedback/100,t,.02);lfo.frequency.setTargetAtTime(state.lfoRate,t,.03);lfo.type=state.lfoWave;for(let b=0;b<8;b++){let d=busNodes[b],v=state.banks[b];d.amp.gain.setTargetAtTime(v.level/100,t,.015);d.pan.pan.setTargetAtTime((v.pan-50)/50,t,.015);d.filter.type=v.insert==='highpass'?'highpass':'lowpass';d.filter.frequency.setTargetAtTime(v.insert==='lowpass'?clamp(70*Math.pow(160,v.cutoff/100),100,11000):clamp(70*Math.pow(250,v.cutoff/100),100,16000),t,.025);d.filter.Q.setTargetAtTime(v.insert==='lowpass'?1.8:.65,t,.02);d.effect.curve=waveShape(v.insert==='drive'?.23:0);d.trem.gain.setTargetAtTime(1,t,.02)}applyLFO()}
+let lfoConnected=[];function applyLFO(){if(!ctx)return;for(let [from,to] of lfoConnected){try{from.disconnect(to)}catch{}}lfoConnected=[];let depth=state.lfoDepth/100;if(state.lfoDest==='filter'){lfoGain.gain.value=depth*2200;for(let d of busNodes){lfoGain.connect(d.filter.frequency);lfoConnected.push([lfoGain,d.filter.frequency])}}else if(state.lfoDest==='pan'){lfoGain.gain.value=depth*.9;for(let d of busNodes){lfoGain.connect(d.pan.pan);lfoConnected.push([lfoGain,d.pan.pan])}}else{lfoGain.gain.value=depth*.4;for(let d of busNodes){lfoGain.connect(d.amp.gain);lfoConnected.push([lfoGain,d.amp.gain])}}}
+function oscillator(type,freq,start,dest,detune=0){let o=ctx.createOscillator();o.type=type;o.frequency.setValueAtTime(Math.max(10,freq),start);o.detune.value=detune;o.connect(dest);o.start(start);return o}
+function voice(type,midi,start,duration,destination,velocity=1){let f=440*Math.pow(2,(midi-69)/12),end=start+duration,env=ctx.createGain(),tone=ctx.createBiquadFilter(),sources=[],nodes=[];env.gain.setValueAtTime(.0001,start);env.gain.exponentialRampToValueAtTime(Math.max(.0002,.055*clamp(velocity,0,1)),start+.012);env.gain.exponentialRampToValueAtTime(.0001,end);tone.type='lowpass';tone.frequency.setValueAtTime(12000,start);env.connect(tone);tone.connect(destination);let add=(o)=>{sources.push(o);return o};switch(type){case 0:{let o=add(oscillator('sawtooth',f,start,env));let sq=add(oscillator('square',f,start,env,2));let acid=ctx.createBiquadFilter();acid.type='lowpass';acid.Q.value=15;acid.frequency.setValueAtTime(Math.min(8000,f*14),start);acid.frequency.exponentialRampToValueAtTime(Math.max(100,f*1.2),end);env.disconnect();env.connect(acid);acid.connect(tone);nodes.push(acid);break}
+case 1:{add(oscillator('sawtooth',f,start,env,-7));add(oscillator('sawtooth',f,start,env,7));add(oscillator('triangle',f/2,start,env));tone.frequency.setValueAtTime(1800,start);tone.frequency.exponentialRampToValueAtTime(320,end);break}
+case 2:{let mod=add(oscillator('sine',f*2,start,ctx.createGain()));let mg=ctx.createGain();mod.disconnect();mod.connect(mg);mg.gain.setValueAtTime(f*3,start);mg.gain.exponentialRampToValueAtTime(Math.max(1,f*.03),end);let car=add(oscillator('sine',f,start,env));mg.connect(car.frequency);nodes.push(mg);break}
+case 3:{let o=add(oscillator('triangle',f,start,ctx.createWaveShaper()));o.disconnect();let sh=ctx.createWaveShaper();sh.curve=waveShape(.3);sh.oversample='2x';o.connect(sh);sh.connect(env);nodes.push(sh);add(oscillator('sine',f*2.01,start,env));break}
+case 4:{let o=add(oscillator('sawtooth',f,start,env));add(oscillator('triangle',f*1.005,start,env));tone.frequency.setValueAtTime(7000,start);tone.frequency.exponentialRampToValueAtTime(900,end);break}
+case 5:{let noise=ctx.createBuffer(1,Math.max(1,Math.floor(ctx.sampleRate*.035)),ctx.sampleRate),a=noise.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=(Math.random()*2-1)*(1-i/a.length);let n=ctx.createBufferSource();n.buffer=noise;let reson=ctx.createBiquadFilter();reson.type='bandpass';reson.frequency.value=f*2;reson.Q.value=24;n.connect(reson);reson.connect(env);n.start(start);sources.push(n);nodes.push(reson);add(oscillator('sine',f,start,env));break}
+case 6:{for(let i=1;i<=6;i++){let gain=ctx.createGain();gain.gain.value=.65/(i*i);gain.connect(env);nodes.push(gain);add(oscillator('sine',f*i,start,gain))}break}
+case 7:{let a=add(oscillator('sine',f,start,env)),b=add(oscillator('sawtooth',f*1.5,start,ctx.createGain()));let ring=ctx.createGain();b.disconnect();b.connect(ring.gain);ring.gain.value=.25;a.disconnect();a.connect(ring);ring.connect(env);nodes.push(ring);break}}
+let record={sources,nodes,env,tone,end};voices.add(record);for(let o of sources){try{o.stop(end+.03)}catch{}}setTimeout(()=>{for(let o of sources)try{o.disconnect()}catch{}for(let n of nodes)try{n.disconnect()}catch{}try{env.disconnect();tone.disconnect()}catch{}voices.delete(record)},Math.max(100,(end-ctx.currentTime+.12)*1000));return record}
+function trigger(midi=48,at=null,duration=.28,only=null){if(!ctx)return;let t=Math.max(ctx.currentTime+.004,at??ctx.currentTime+.008);let count=0;state.banks.forEach((bank,b)=>bank.slots.forEach((slot,s)=>{if(!slot.on || (only&&(only[0]!==b||only[1]!==s)))return;if(count++>=64)return;voice(slot.type,midi,t,duration,window.__continuumSlotInputs?.[b]?.[s]||busNodes[b].input);let m=$('meter'+b);if(m){m.style.width='85%';setTimeout(()=>m.style.width='0%',180)}}));if(!count&&only){let [b,s]=only;voice(state.banks[b].slots[s].type,midi,t,duration,busNodes[b].input)}}
+async function ensure(){
+ try{
+  if(!window.AudioContext&&!window.webkitAudioContext)throw Error('Web Audio is unavailable in this browser');
+  makeAudio();
+  if(ctx.state!=='running')await ctx.resume();
+  if(ctx.state!=='running')throw Error('Audio context is '+ctx.state+'; check browser audio permissions');
+  updateAudio();
+  try{startScope()}catch(scopeError){console.warn('Master scope unavailable:',scopeError)}
+  say('Audio running · '+ctx.sampleRate+' Hz · '+(ctx.baseLatency?Math.round(ctx.baseLatency*1000)+' ms base latency':'latency unreported'));
+  return true;
+ }catch(error){console.error('Continuum audio startup:',error);say('AUDIO ERROR · '+error.message);$('start').textContent='⚠ RETRY AUDIO';return false}
+}
+function seqTick(){/* P14: configured by the eight-bank performance scheduler below. */}
+function stopSeq(){if(seqTimer)clearInterval(seqTimer);seqTimer=null;$('seq').textContent='▶ SEQUENCER';document.querySelectorAll('[data-step]').forEach(e=>e.classList.remove('play'))}
+function bind(){document.addEventListener('change',e=>{let el=e.target;if(el.dataset.on){let[b,s]=el.dataset.on.split(',').map(Number);state.banks[b].slots[s].on=el.checked}else if(el.dataset.type){let[b,s]=el.dataset.type.split(',').map(Number);state.banks[b].slots[s].type=+el.value}else if(el.dataset.insert){state.banks[+el.dataset.insert].insert=el.value;updateAudio()}else if(el.id==='lfoDest'||el.id==='lfoWave'){state[el.id]=el.value;updateAudio()}});document.addEventListener('input',e=>{let el=e.target;if(el.dataset.param){let[b,k]=el.dataset.param.split(',');state.banks[+b][k]=+el.value;el.parentElement.querySelector('span').textContent=k==='pan'?el.value-50:el.value+'%';updateAudio()}else if(['master','tempo','lfoRate','lfoDepth','drive','delayMix','delayTime','feedback','gate'].includes(el.id)){state[el.id]=+el.value;updateAudio()}});document.addEventListener('click',async e=>{let el=e.target.closest('button');if(!el)return;if(el.dataset.test){await ensure();let[b,s]=el.dataset.test.split(',').map(Number);trigger(48,null,.42,[b,s])}else if(el.dataset.testbank!==undefined){await ensure();let b=+el.dataset.testbank;let s=state.banks[b].slots.findIndex(x=>x.on);trigger(48,null,.42,[b,s<0?0:s])}else if(el.dataset.step!==undefined){let i=+el.dataset.step;state.steps[i]=!state.steps[i];el.classList.toggle('on',state.steps[i])}});$('start').onclick=async()=>{if(await ensure())$('start').textContent='✓ AUDIO ENABLED'};$('panic').onclick=()=>{stopSeq();if(ctx){let t=ctx.currentTime;try{master.gain.cancelScheduledValues(t);master.gain.setValueAtTime(0,t)}catch{}for(let v of voices){for(let o of v.sources)try{o.stop(t)}catch{}try{v.env.disconnect();v.tone.disconnect()}catch{}}voices.clear();try{feedbackNode.gain.setValueAtTime(0,t)}catch{}setTimeout(()=>{if(ctx&&ctx.state==='running'){updateAudio()}},100)}say('All voices stopped · master temporarily muted')};
+$('killAudio').onclick=()=>{stopSeq();scopeStarted=false;let old=ctx;try{old?.suspend()}catch{}try{master?.disconnect()}catch{}try{preMaster?.disconnect()}catch{}try{feedbackNode?.disconnect()}catch{}for(let v of voices){for(let o of v.sources)try{o.stop()}catch{}}voices.clear();ctx=null;master=null;preMaster=null;delay=null;delayGain=null;feedbackNode=null;compressor=null;lfo=null;lfoGain=null;busNodes=[];scopeAnalyser=null;window.__continuumDrive=null;try{old?.close()}catch{}$('start').textContent='▶ ENABLE AUDIO';say('AUDIO KILLED · engine shut down')};$('seq').onclick=async()=>{await ensure();if(seqTimer){stopSeq();return}stepPos=0;nextStepTime=ctx.currentTime+.06;seqTimer=setInterval(seqTick,25);seqTick();$('seq').textContent='■ STOP SEQUENCER'};$('export').onclick=()=>{let blob=new Blob([JSON.stringify({format:'continuum-synth-p01',state},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Continuum_Synth_8x8_Patch.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};$('import').onclick=()=>$('file').click();$('file').onchange=async e=>{try{let data=JSON.parse(await e.target.files[0].text());if(data.format!=='continuum-synth-p01'||!Array.isArray(data.state.banks)||data.state.banks.length!==8)throw Error('Not a Continuum Synth P01 patch');stopSeq();state=data.state;buildUI();for(let id of ['master','tempo','lfoRate','lfoDepth','lfoDest','lfoWave','drive','delayMix','delayTime','feedback','gate'])$(id).value=state[id];updateAudio();say('Patch imported')}catch(err){say('Import failed: '+err.message)}e.target.value=''};const keyMap='awsedftgyhujk';document.addEventListener('keydown',async e=>{if(e.repeat||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;let n=keyMap.indexOf(e.key.toLowerCase());if(n<0)return;await ensure();let midi=(+$('octave').value+1)*12+n;trigger(midi,null,.35);document.querySelector(`[data-note="${n}"]`)?.classList.add('pressed')});document.addEventListener('keyup',e=>{let n=keyMap.indexOf(e.key.toLowerCase());if(n>=0)document.querySelector(`[data-note="${n}"]`)?.classList.remove('pressed')});$('octave').addEventListener('change',()=>document.querySelectorAll('#keys [data-note]').forEach(k=>{const n=+k.dataset.note;k.textContent=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'][n%12]+(Math.floor(n/12)+Number($('octave').value))}));let keys=$('keys');keys.addEventListener('pointerdown',async e=>{let k=e.target.closest('[data-note]');if(!k)return;e.preventDefault();await ensure();let n=+k.dataset.note;trigger((+$('octave').value+1)*12+n,null,.42);k.classList.add('pressed');try{k.setPointerCapture(e.pointerId)}catch{}});for(let ev of ['pointerup','pointercancel','lostpointercapture'])keys.addEventListener(ev,e=>e.target.closest('[data-note]')?.classList.remove('pressed'))}
+buildUI();bind();
+
+// P05 performance sequencer: independent note and filter lanes, patch-persistent.
+state.stepPitch=Array.isArray(state.stepPitch)?state.stepPitch:Array(16).fill(0);
+state.stepFilter=Array.isArray(state.stepFilter)?state.stepFilter:Array(16).fill(78);
+const pitchNames=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+function renderLanes(){
+  $('stepLanes').innerHTML=Array.from({length:16},(_,i)=>{
+    let opts=Array.from({length:25},(_,j)=>{let v=j-12, n=48+v;return `<option value="${v}" ${state.stepPitch[i]===v?'selected':''}>${pitchNames[(n%12+12)%12]}${Math.floor(n/12)-1} ${v>=0?'+':''}${v}</option>`}).join('');
+    return `<div class="stepColumn" data-col="${i}"><button data-lane-step="${i}" class="${state.steps[i]?'on':''}">${String(i+1).padStart(2,'0')} · ${state.steps[i]?'ON':'OFF'}</button><label>PITCH<select data-pitch="${i}">${opts}</select></label><label>FILTER <output id="filterValue${i}">${state.stepFilter[i]}%</output><input data-filter="${i}" type="range" min="5" max="100" value="${state.stepFilter[i]}"></label></div>`;
+  }).join('');
+}
+renderLanes();
+document.addEventListener('click',e=>{let b=e.target.closest('[data-lane-step]');if(!b)return;let i=+b.dataset.laneStep;state.steps[i]=!state.steps[i];b.classList.toggle('on',state.steps[i]);b.textContent=String(i+1).padStart(2,'0')+' · '+(state.steps[i]?'ON':'OFF');document.querySelector(`[data-step="${i}"]`)?.classList.toggle('on',state.steps[i])});
+document.addEventListener('input',e=>{let t=e.target;if(t.dataset.pitch!==undefined)state.stepPitch[+t.dataset.pitch]=+t.value;if(t.dataset.filter!==undefined){state.stepFilter[+t.dataset.filter]=+t.value;$('filterValue'+t.dataset.filter).textContent=t.value+'%'}});
+$('demo').onclick=async()=>{state.steps=Array.from({length:16},(_,i)=>![3,7,11,15].includes(i));state.stepPitch=[0,0,7,0,3,5,7,10,0,12,7,5,3,0,-2,-5];state.stepFilter=[22,45,68,30,55,82,60,20,25,75,96,42,65,85,35,14];renderLanes();await ensure();if(!seqTimer)$('seq').click();say('Demo pattern running · pitch and filter automation active')};
+$('clearSteps').onclick=()=>{state.steps=Array(16).fill(false);renderLanes();document.querySelectorAll('[data-step]').forEach(e=>e.classList.remove('on'))};
+const originalSeqTick=seqTick;
+seqTick=function(){originalSeqTick();let i=(stepPos-1+16)%16;document.querySelectorAll('[data-col]').forEach(el=>el.classList.toggle('play',+el.dataset.col===i))};
+const oldStopSeq=stopSeq;
+stopSeq=function(){oldStopSeq();document.querySelectorAll('[data-col]').forEach(el=>el.classList.remove('play'))};
+const oldBuildUI=buildUI;
+buildUI=function(){oldBuildUI();state.stepPitch=Array.isArray(state.stepPitch)?state.stepPitch:Array(16).fill(0);state.stepFilter=Array.isArray(state.stepFilter)?state.stepFilter:Array(16).fill(78);renderLanes()};
+</script><script>
+/* Non-destructive UI adapter: retains P02's existing range inputs, input events, DSP and patch format. */
+(function(){
+function convert(){
+ document.querySelectorAll('input[type="range"]:not(.rotary-source)').forEach(input=>{
+  input.classList.add('rotary-source');
+  const control=document.createElement('div');control.className='rotary-control';
+  const dial=document.createElement('div');dial.className='rotary-dial';dial.tabIndex=0;dial.setAttribute('role','slider');
+  const label=input.closest('label');dial.setAttribute('aria-label',label?.textContent.trim()||input.id||'Synth control');
+  const needle=document.createElement('div');needle.className='rotary-needle';dial.append(needle);
+  const value=document.createElement('output');value.className='rotary-readout';
+  control.append(dial,value);input.insertAdjacentElement('afterend',control);
+  if(input.dataset.param)control.style.setProperty('--rotary-accent',input.closest('.bank')?.style.getPropertyValue('--bank-accent')||'#ffb85d');
+  const min=Number(input.min||0),max=Number(input.max||100),step=Number(input.step||1);
+  const precision=(String(step).split('.')[1]||'').length;
+  function draw(){let v=Number(input.value),t=Math.max(0,Math.min(1,(v-min)/(max-min)));dial.style.setProperty('--angle',(-135+270*t)+'deg');dial.style.setProperty('--sweep',(270*t)+'deg');dial.setAttribute('aria-valuemin',min);dial.setAttribute('aria-valuemax',max);dial.setAttribute('aria-valuenow',v);value.textContent=v.toFixed(precision)+(input.dataset.param?'%':'');if(input.dataset.param?.endsWith(',pan'))value.textContent=String(v-50);}
+  function set(v){v=Math.max(min,Math.min(max,Math.round((v-min)/step)*step+min));input.value=v.toFixed(precision);input.dispatchEvent(new Event('input',{bubbles:true}));draw()}
+  let drag=null;
+  dial.addEventListener('pointerdown',e=>{if(drag)return;e.preventDefault();dial.focus();drag={id:e.pointerId,y:e.clientY,v:Number(input.value)};dial.setPointerCapture(e.pointerId)});
+  dial.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;set(drag.v+(drag.y-e.clientY)*(max-min)/(e.shiftKey?900:240))});
+  function release(e){if(drag&&drag.id===e.pointerId){drag=null;input.dispatchEvent(new Event('change',{bubbles:true}))}}
+  dial.addEventListener('pointerup',release);dial.addEventListener('pointercancel',release);dial.addEventListener('lostpointercapture',()=>drag=null);
+  dial.addEventListener('keydown',e=>{let direction=({ArrowUp:1,ArrowRight:1,ArrowDown:-1,ArrowLeft:-1,PageUp:10,PageDown:-10})[e.key];if(direction){e.preventDefault();set(Number(input.value)+direction*step)}else if(e.key==='Home'){e.preventDefault();set(min)}else if(e.key==='End'){e.preventDefault();set(max)}});
+  dial.addEventListener('dblclick',()=>set(Number(input.defaultValue)));
+  input.addEventListener('input',draw);draw();
+ });
+}
+convert();
+const banks=document.getElementById('banks');if(banks)new MutationObserver(()=>convert()).observe(banks,{childList:true});
+const file=document.getElementById('file');if(file)file.addEventListener('change',()=>setTimeout(()=>document.querySelectorAll('.rotary-source').forEach(x=>x.dispatchEvent(new Event('input',{bubbles:false}))),120));
+})();
+</script><script>
+
+/* P09 bank-lane sequencer and bank-bus oscilloscopes. Existing synthesis and patch format preserved. */
+(function(){
+window.__continuumSlotInputs=[];
+const colors=['#f6b15c','#e9ab65','#d99850','#f0c080','#c88d54','#dfb077','#e6c28c','#ba854e'];
+const overview=document.querySelector('.overview');
+const scopes=document.createElement('div');scopes.className='bankScopeGrid';
+scopes.innerHTML=colors.map((c,i)=>`<div class="bankScopeTile" style="--bank-accent:${c}"><strong>ENGINE ${String(i+1).padStart(2,'0')}</strong><canvas id="bankScope${i}" aria-label="Engine slot ${i+1} oscilloscope"></canvas></div>`).join('');
+const masterPanel=overview?.querySelector('.panel:last-child');if(masterPanel){masterPanel.prepend(scopes);const selector=document.createElement('div');selector.className='scopeSelector';selector.innerHTML='<span class="scopeLabel">INDIVIDUAL ENGINE OSCILLOSCOPES</span><label>VIEW BANK <select id="scopeBankSelect">'+Array.from({length:8},(_,i)=>`<option value="${i}">BANK ${String(i+1).padStart(2,'0')}</option>`).join('')+'</select></label>';masterPanel.prepend(selector);masterPanel.id='engineOscilloscopePanel';}
+const info=overview?.querySelector('.panel:first-child');if(info){info.id='rackInfoBottom';document.querySelector('.footer')?.before(info)}
+const seq=document.getElementById('performanceSeq');
+const host=document.createElement('div');host.id='bankSeqInterface';
+host.innerHTML=`<div class="bankSeqTop"><label>EDIT BANK <select id="bankSeqSelect"></select></label><label>STEPS <select id="bankSeqLength"><option>8</option><option selected>16</option><option>32</option><option>64</option></select></label><label>ARP <select id="bankSeqArp"><option value="off">OFF</option><option value="up">UP</option><option value="down">DOWN</option><option value="updown">UP / DOWN</option><option value="random">RANDOM</option></select></label><button id="bankSeqPreset">✦ TEST PATTERN</button><button id="bankSeqClear">CLEAR BANK</button></div><div class="p16-target-panel"><div class="p16-target-head"><strong>ENGINE SEQUENCER TARGETS · SELECTED BANK</strong><button type="button" id="p16AllOn">ALL ON</button><button type="button" id="p16AllOff">ALL OFF</button></div><div class="p16-target-grid" id="p16EngineTargets"></div><label class="p16-lane-label">STEP EDITING <select id="p16Lane"><option value="bank">BANK PATTERN (ALL TARGETED ENGINES)</option><option value="0">ENGINE 01 STEP MASK</option><option value="1">ENGINE 02 STEP MASK</option><option value="2">ENGINE 03 STEP MASK</option><option value="3">ENGINE 04 STEP MASK</option><option value="4">ENGINE 05 STEP MASK</option><option value="5">ENGINE 06 STEP MASK</option><option value="6">ENGINE 07 STEP MASK</option><option value="7">ENGINE 08 STEP MASK</option></select></label><p class="p16-help">Engine targets select which enabled rack engines the sequencer plays. Per-engine step masks allow independent rhythmic layers. Audition and keyboard remain unaffected.</p></div><div class="bankSeqWrap"><div class="bankSeqGrid" id="bankSeqGrid"></div></div><div class="bankSeqEditor"><strong id="bankSeqSelected" style="font-size:10px;color:#e1bc8a">BANK 01 · STEP 01</strong><label>PITCH <input id="bankSeqPitch" type="number" min="-24" max="24" value="0" step="1"></label><label>VELOCITY <input id="bankSeqVelocity" type="number" min="1" max="127" value="100"></label><label>GATE % <input id="bankSeqGate" type="number" min="5" max="100" value="55"></label><label>FILTER % <input id="bankSeqFilter" type="number" min="5" max="100" value="78"></label></div><p class="bankSeqHelp">Click a square to switch its note on or off. Click an active square to select it for pitch, velocity, gate and filter editing. Each bank loops independently at the master tempo. Mute affects playback, not programming. ARP cycles through the bank's programmed pitches.</p>`;
+seq.append(host);
+// P13: Keep the performance-sequencer settings together on the Edit Bank toolbar.
+const seqToolbar=host.querySelector('.bankSeqTop');
+const oldSeqTop=seq.querySelector('.seqTop');
+if(seqToolbar&&oldSeqTop){
+  for(const id of ['seqNote','gate','demo','clearSteps']){
+    const control=document.getElementById(id);
+    const item=control?.closest('label')||control;
+    if(item)seqToolbar.appendChild(item);
+  }
+  const root=document.getElementById('seqNote');
+  if(root){
+    const chosen=root.value;
+    const names=['C','C♯ / D♭','D','D♯ / E♭','E','F','F♯ / G♭','G','G♯ / A♭','A','A♯ / B♭','B'];
+    root.innerHTML=Array.from({length:84},(_,i)=>{const midi=i+24;return `<option value="${midi}">${names[midi%12]}${Math.floor(midi/12)-1}</option>`}).join('');
+    root.value=chosen;
+  }
+  // Retain the title and explanatory copy, without orphaned controls on the right.
+  oldSeqTop.classList.add('seqHeadingOnly');
+}
+
+const $id=id=>document.getElementById(id);
+const initPattern=(b)=>({length:16,mute:false,arp:'off',steps:Array.from({length:64},(_,i)=>({on:b===0?i<16&&i%4===0:false,pitch:0,velocity:100,gate:55,filter:78}))});
+function normalize(){if(!Array.isArray(state.bankPatterns)||state.bankPatterns.length!==8)state.bankPatterns=Array.from({length:8},(_,b)=>initPattern(b));state.bankPatterns=state.bankPatterns.map((p,b)=>({length:[8,16,32,64].includes(+p?.length)?+p.length:16,mute:!!p?.mute,arp:['off','up','down','updown','random'].includes(p?.arp)?p.arp:'off',steps:Array.from({length:64},(_,i)=>({on:!!p?.steps?.[i]?.on,pitch:clamp(+p?.steps?.[i]?.pitch||0,-24,24),velocity:clamp(+p?.steps?.[i]?.velocity||100,1,127),gate:clamp(+p?.steps?.[i]?.gate||55,5,100),filter:clamp(+p?.steps?.[i]?.filter||78,5,100)}))}));}
+normalize();
+// P16: persistent per-bank engine targeting and independent step masks.
+function normalizeTargets(){
+ if(!Array.isArray(state.engineSequence)||state.engineSequence.length!==8)state.engineSequence=Array.from({length:8},()=>({targets:Array(8).fill(true),masks:Array.from({length:8},()=>Array(64).fill(true))}));
+ state.engineSequence=state.engineSequence.map(v=>({
+  targets:Array.from({length:8},(_,i)=>v?.targets?.[i]!==false),
+  masks:Array.from({length:8},(_,i)=>Array.from({length:64},(_,j)=>v?.masks?.[i]?.[j]!==false))
+ }));
+}
+normalizeTargets();let editBank=0,editStep=0,playingStep=-1,editLane='bank';
+function renderTargets(){const v=state.engineSequence[editBank];$id('p16EngineTargets').innerHTML=v.targets.map((on,i)=>`<button type="button" class="p16-engine-target ${on?'active':''}" data-p16target="${i}" aria-pressed="${on}" title="Sequence Bank ${editBank+1} Engine ${i+1}">ENGINE ${String(i+1).padStart(2,'0')} <b>${on?'ON':'OFF'}</b></button>`).join('');$id('p16Lane').value=editLane;}
+$id('p16EngineTargets').addEventListener('click',e=>{const t=e.target.closest('[data-p16target]');if(!t)return;let i=+t.dataset.p16target;state.engineSequence[editBank].targets[i]=!state.engineSequence[editBank].targets[i];renderTargets()});
+$id('p16AllOn').onclick=()=>{state.engineSequence[editBank].targets.fill(true);renderTargets()};
+$id('p16AllOff').onclick=()=>{state.engineSequence[editBank].targets.fill(false);renderTargets()};
+$id('p16Lane').onchange=e=>{editLane=e.target.value;renderGrid()};
+$id('bankSeqSelect').innerHTML=colors.map((c,i)=>`<option value="${i}">BANK ${String(i+1).padStart(2,'0')}</option>`).join('');
+function editor(){const p=state.bankPatterns[editBank],st=p.steps[editStep];$id('bankSeqSelected').textContent=`BANK ${String(editBank+1).padStart(2,'0')} · STEP ${String(editStep+1).padStart(2,'0')}`;for(const [id,k] of [['bankSeqPitch','pitch'],['bankSeqVelocity','velocity'],['bankSeqGate','gate'],['bankSeqFilter','filter']])$id(id).value=st[k];$id('bankSeqLength').value=p.length;$id('bankSeqArp').value=p.arp;$id('bankSeqSelect').value=editBank;renderTargets();}
+function renderGrid(){const max=Math.max(...state.bankPatterns.map(p=>p.length));let h='<div></div>'+Array.from({length:max},(_,i)=>`<div class="seqHead">${i+1}</div>`).join('');for(let b=0;b<8;b++){let p=state.bankPatterns[b];h+=`<div class="bankSeqRowLabel" style="color:${colors[b]}"><button data-bankmute="${b}" class="${p.mute?'muted':''}" title="Mute bank ${b+1}">${p.mute?'MUTED':'▶'}</button>BANK ${String(b+1).padStart(2,'0')}</div>`;for(let i=0;i<max;i++){const active=i<p.length,st=p.steps[i],on=editLane==='bank'||b!==editBank?st.on:state.engineSequence[b].masks[+editLane][i];h+=`<button aria-label="Bank ${b+1} step ${i+1} ${on?'on':'off'}" data-bankstep="${b},${i}" ${active?'':'disabled'} style="--bank-accent:${colors[b]}" class="bankSeqCell ${on?'on':''} ${!active?'rest':''} ${editBank===b&&editStep===i?'selected':''} ${playingStep===i?'play':''}"></button>`}}$id('bankSeqGrid').style.gridTemplateColumns=`104px repeat(${max},minmax(24px,1fr))`;$id('bankSeqGrid').innerHTML=h;editor();}
+renderGrid();
+$id('bankSeqGrid').addEventListener('click',e=>{const m=e.target.closest('[data-bankmute]');if(m){state.bankPatterns[+m.dataset.bankmute].mute=!state.bankPatterns[+m.dataset.bankmute].mute;renderGrid();return}const cell=e.target.closest('[data-bankstep]');if(!cell)return;let [b,i]=cell.dataset.bankstep.split(',').map(Number);const st=state.bankPatterns[b].steps[i];if(editLane==='bank'||b!==editBank){st.on=!st.on}else{const mask=state.engineSequence[b].masks[+editLane];mask[i]=!mask[i]}editBank=b;editStep=i;renderGrid();});
+$id('bankSeqSelect').onchange=e=>{editBank=+e.target.value;$id('scopeBankSelect').value=editBank;editStep=Math.min(editStep,state.bankPatterns[editBank].length-1);editLane='bank';renderGrid()};
+$id('bankSeqLength').onchange=e=>{state.bankPatterns[editBank].length=+e.target.value;editStep=Math.min(editStep,+e.target.value-1);renderGrid()};
+$id('bankSeqArp').onchange=e=>state.bankPatterns[editBank].arp=e.target.value;
+for(const [id,k] of [['bankSeqPitch','pitch'],['bankSeqVelocity','velocity'],['bankSeqGate','gate'],['bankSeqFilter','filter']])$id(id).addEventListener('input',e=>{let el=e.target;state.bankPatterns[editBank].steps[editStep][k]=clamp(+el.value,+el.min,+el.max)});
+$id('bankSeqPreset').onclick=()=>{let p=state.bankPatterns[editBank];p.steps.forEach((st,i)=>{st.on=i<p.length&&i%4!==3;st.pitch=[0,0,7,12,5,3,7,-5][i%8];st.velocity=[110,78,94,70][i%4];st.gate=55;st.filter=[30,60,80,45][i%4]});renderGrid()};
+$id('bankSeqClear').onclick=()=>{if(editLane==='bank')state.bankPatterns[editBank].steps.forEach(st=>st.on=false);else state.engineSequence[editBank].masks[+editLane].fill(false);renderGrid()};
+// The previous sequencer is superseded by the independent bank scheduler, not run in parallel.
+seqTick=function(){if(!ctx)return;let safety=0;while(nextStepTime<ctx.currentTime+.12&&safety++<32){let tick=stepPos;const beat=60/clamp(state.tempo,40,240)/4;state.bankPatterns.forEach((p,b)=>{if(p.mute)return;let i=tick%p.length,st=p.steps[i];if(!st.on)return;let offset=st.pitch;if(p.arp!=='off'){const notes=p.steps.slice(0,p.length).filter(x=>x.on).map(x=>x.pitch).sort((a,z)=>a-z);if(notes.length){let j=Math.floor(tick/p.length)*p.length+i;if(p.arp==='down')offset=notes[notes.length-1-j%notes.length];else if(p.arp==='updown'){let path=notes.length<2?notes:notes.concat(notes.slice(1,-1).reverse());offset=path[j%path.length]}else if(p.arp==='random')offset=notes[Math.floor(Math.random()*notes.length)];else offset=notes[j%notes.length]}}const t=Math.max(ctx.currentTime+.004,nextStepTime),duration=beat*st.gate/100,velocity=st.velocity/127;let count=0;state.banks[b].slots.forEach((slot,s)=>{if(!slot.on||!state.engineSequence[b].targets[s]||!state.engineSequence[b].masks[s][i]||count++>=8)return;voice(slot.type,clamp(Number($id('seqNote').value||48)+offset,12,119),t,duration,window.__continuumSlotInputs?.[b]?.[s]||busNodes[b].input,velocity,slot.edit);});const freq=clamp(70*Math.pow(250,st.filter/100),100,16000);busNodes[b].filter.frequency.setTargetAtTime(freq,t,.009)});let idx=tick;setTimeout(()=>{if(!seqTimer)return;playingStep=idx;document.querySelectorAll('[data-bankstep]').forEach(el=>{const [b,i]=el.dataset.bankstep.split(',').map(Number);el.classList.toggle('play',i===idx%state.bankPatterns[b].length)})},Math.max(0,(nextStepTime-ctx.currentTime)*1000));stepPos++;nextStepTime+=beat;}};
+const previousStop=stopSeq;stopSeq=function(){previousStop();playingStep=-1;document.querySelectorAll('[data-bankstep]').forEach(el=>el.classList.remove('play'))};
+$id('demo').onclick=()=>{$id('bankSeqPreset').click();say('Test pattern loaded for selected bank')};
+$id('clearSteps').onclick=()=>{$id('bankSeqClear').click();say('Selected bank sequence cleared')};
+const oldBuild=buildUI;buildUI=function(){oldBuild();normalize();normalizeTargets();renderGrid()};
+// Bank analysers are tapped after bank amplitude, without changing audio routing.
+let scopeCtx=null,analysers=[];const oldMake=makeAudio;makeAudio=function(){oldMake();if(ctx&&scopeCtx!==ctx){scopeCtx=ctx;window.__continuumSlotInputs=busNodes.map(d=>Array.from({length:8},()=>{const g=ctx.createGain();g.connect(d.input);return g}));analysers=window.__continuumSlotInputs.map(row=>row.map(g=>{const a=ctx.createAnalyser();a.fftSize=512;g.connect(a);return a}))}};
+$id('scopeBankSelect').addEventListener('change',()=>{ /* displays read selected bank on next frame */ });
+let rafStarted=false;function drawScopes(){requestAnimationFrame(drawScopes);const selected=+$id('scopeBankSelect').value;const row=analysers[selected]||Array(8).fill(null);row.forEach((a,i)=>{const canvas=$id('bankScope'+i);if(!canvas)return;const dpr=Math.min(devicePixelRatio||1,2),w=canvas.clientWidth,h=canvas.clientHeight;if(w<1||h<1)return;let pw=Math.floor(w*dpr),ph=Math.floor(h*dpr);if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph}const c=canvas.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle='#070707';c.fillRect(0,0,w,h);c.strokeStyle='#27322e';c.beginPath();c.moveTo(0,h/2);c.lineTo(w,h/2);c.stroke();const samples=new Uint8Array(a?a.fftSize:512);if(a&&ctx&&ctx.state==='running')a.getByteTimeDomainData(samples);else samples.fill(128);c.strokeStyle='#efb46e';c.lineWidth=1.3;c.beginPath();for(let j=0;j<samples.length;j++){let x=j/(samples.length-1)*w,y=samples[j]/255*h;j?c.lineTo(x,y):c.moveTo(x,y)}c.stroke()})}drawScopes();
+})();
+
+</script>
+<style id="p14-original-chassis">
+/* New P14 features only: P13 chassis CSS above is retained unchanged. */
+#p14-nav{position:sticky;top:0;z-index:30;display:flex;flex-wrap:wrap;gap:6px;background:#0b0b0cf5;padding:9px;border:1px solid #343435;border-radius:5px;margin-bottom:12px}
+#p14-nav a{color:#e8e3dc;text-decoration:none;padding:6px 9px;border:1px solid #414143;border-radius:4px;background:#181819;font-size:10px}
+#p14-nav a:hover{border-color:#d6a35f;background:#242426}
+#p14-atlas{background:#0b0b0c;border:1px solid #343435;border-radius:7px;padding:14px;margin:12px 0;color:#e9e8e5}
+#p14-atlas h2,#p14-atlas summary{color:#e8c18a}
+#p14-atlas details,#p14-atlas .p14-sub{margin:8px 0;padding:10px;background:#111112;border:1px solid #343435;border-radius:5px}
+#p14-atlas .p14-patch{background:#101011;border:1px solid #39393a;border-radius:4px;padding:10px;margin:8px 0}
+#p14-atlas .p14-patch strong{color:#e8c18a}
+#p14-atlas .p14-patch p,#p14-atlas .p14-caption{font-size:11px;color:#aaa8a5;line-height:1.5}
+#p14-atlas .recipe,#p14-atlas .p14-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:9px 0}
+#p14-atlas .node,#p14-atlas .p14-node{padding:7px;border:1px solid #5c5349;border-radius:4px;background:#181819;color:#e9e8e5;font-size:11px}
+#p14-atlas button,#p14-atlas select{background:#181819!important;border:1px solid #414143!important;color:#e9e8e5!important;border-radius:4px;padding:7px}
+#p14-atlas button:hover{border-color:#d6a35f!important;background:#242426!important}
+#p14-atlas input{accent-color:#d6a35f}
+#p14-atlas .p14-graph{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px;border:1px solid #343435;background:#09090a}
+#p14-atlas .p14-arrow{color:#d6a35f}
+#p14-atlas .p14-route{display:flex;align-items:center;gap:10px;justify-content:space-between;margin:6px 0;color:#c9c6c0}
+#p14-atlas .p14-status{border:1px solid #514638;background:#151412;color:#e8c18a;padding:9px;margin:12px 0;font-size:11px}
+#p14-atlas .p14-controls label{color:#c9c6c0;font-size:10px}
+#p14-atlas .p14-action{border-color:#b88a4f!important}
+html{scroll-behavior:smooth}
+/* Remove residual blue/teal from older layers without changing the original black chassis. */
+:root{--teal:#d6a35f;--amber:#ffbe72}
+.rotary-readout{color:#ded6c9!important}
+.slot input[type=checkbox]{border-color:#777!important}
+.slot input[type=checkbox]:checked{background:#d9b47c!important;border-color:#f0d2a5!important;box-shadow:0 0 6px #d9b47c70!important}
+.scope,#engineOscilloscopePanel .bankScopeTile canvas{background:#09090a!important;border-color:#39393a!important}
+.status{background:#10100f!important;border-color:#585048!important;color:#ead5b6!important}
+.meter i{background:linear-gradient(90deg,#b6b5b2,#d6a35f,#e8c18a)!important}
+</style>
+<script>
+/* P14: integrated factory library, matrix, sonic logic and patch laboratory. */
+(function(){
+const families=[
+['Warm & Organic',['Velvet Bloom','Golden Drift','Soft Ember','Living Breath'],[1,6],38,48,12,'play'],
+['Ambient & Evolving',['Celestial Tide','Infinite Glass','Aurora Field','Slow Horizon'],[4,6],59,39,25,'drone'],
+['Analogue & Harmonic',['Copper Pulse','Satin Lead','Vintage Current','Harmonic Sun'],[0,1],54,43,10,'arp'],
+['Bell & Resonant',['Crystal Rain','Bronze Bells','Singing Stone','Silver Chimes'],[2,5],76,42,25,'arp'],
+['Bass & Subharmonic',['Deep Current','Subterranean','Velvet Pressure','Low Orbit'],[1,6],23,44,5,'play'],
+['Rhythmic & Pulsating',['Heartbeat Engine','Liquid Motion','Amber Sequence','Kinetic Bloom'],[3,0],63,40,15,'arp'],
+['Natural & Textural',['Forest Whisper','Rain Resonance','Organic Pulse','Mosslight'],[5,6],49,36,20,'drone'],
+['Experimental & Expressive',['Harmonic Creature','Fractal Bloom','Liquid Alloy','Emergent Voice'],[7,3],64,32,12,'play']
+];
+const patterns=[[0,7,12,7],[0,5,7,12],[0,3,7,12],[0,7,12,19],[0,0,5,7],[0,7,5,12],[0,2,7,9],[0,5,7,10]];
+const recipes=families.flatMap(([family,names,types,cutoff,level,delay,mode],fi)=>names.map((name,vi)=>({
+name,family,mode:vi===3&&mode==='play'?'drone':mode,
+types:vi===1?[types[1],types[0]]:types.slice(),
+cutoff:Math.max(12,Math.min(90,cutoff+[0,7,-7,3][vi])),
+level:Math.max(22,level-[0,3,2,5][vi]),delay:Math.min(36,delay+[0,4,-3,7][vi]),feedback:Math.min(24,8+fi+[0,2,0,4][vi]),
+pattern:patterns[fi].map((v,i)=>v+(vi===2&&i%2?2:vi===3&&i===3?-2:0)),
+notes:`${family} · ${['foundation','harmonic variation','contrasting timbre','slow evolution'][vi]}.`,
+why:`Combines ${TYPES[types[0]]} and ${TYPES[types[1]]} in parallel with controlled bank filtering, amplitude and shared effects.`,
+routes:[]
+})));
+let current=0,droneRecords=[],matrixConnections=[],currentRoutes=[],labCandidates=[];
+const atlas=document.createElement('section');atlas.id='p14-atlas';
+atlas.innerHTML=`<h2>PATCH ATLAS · 32 FACTORY STARTING POINTS</h2>
+<p class="p14-caption">32 editable sound recipes across eight families. These are generated engineering patches, not yet ear-certified sounds. Each uses the existing eight synthesis engines and unified bank mixer.</p>
+<label>Performance behaviour <select id="p14-mode"><option value="recipe">Use patch default</option><option value="play">Playable instrument</option><option value="arp">Arpeggiated sequence</option><option value="drone">Sustained drone</option></select></label>
+<div id="p14-recipes"></div>
+<section id="p14-matrix" class="p14-sub"><h2>CONTINUUM SYNTHESIS MATRIX · REAL BANK ROUTING</h2>
+<p class="p14-caption">Existing engine slots feed their bank buses. Create real, low-gain audio sends from an earlier bank's post-pan signal to a later bank's filter input. Forward-only routes prevent feedback cycles. The original direct bank-to-master path is retained.</p>
+<div class="p14-controls"><label>SOURCE BANK <select id="p14-from"></select></label><label>DESTINATION BANK <select id="p14-to"></select></label><label>SEND LEVEL <input id="p14-send" type="range" min="0" max="18" value="8"></label><button id="p14-connect">+ CONNECT AUDIO SEND</button><button id="p14-clear">CLEAR SENDS</button></div><div id="p14-graph" class="p14-graph"></div><div id="p14-routes"></div></section>
+<section id="p14-logic" class="p14-sub"><h2>SONIC LOGIC ENGINE · LOCAL DISCOVERY</h2><p class="p14-caption">Suggests reproducible, compatible engine combinations using simple graph constraints and bounded parameters. It does not claim to judge musical beauty or analyse actual audio yet.</p><div class="p14-controls"><label>DISCOVERY <select id="p14-discovery"><option value="guided">Guided · warm and harmonic</option><option value="serendipity">Serendipity · surprising combinations</option><option value="evolve">Evolutionary · mutate current patch</option></select></label><label>NOVELTY <input id="p14-novelty" type="range" min="0" max="100" value="35"></label><button id="p14-discover">✦ DISCOVER PATCH</button></div><div id="p14-suggestion"></div></section>
+<section id="p14-lab" class="p14-sub"><h2>EVOLUTIONARY PATCH LABORATORY</h2><p class="p14-caption">Four bounded variations of the selected patch. Audition one, keep it, then evolve it again. This is interactive parameter exploration; preference learning is not yet persistent.</p><div class="p14-controls"><button id="p14-variations">GENERATE FOUR VARIATIONS</button><button id="p14-save">EXPORT CURRENT PATCH JSON</button></div><div id="p14-variants"></div></section>
+<div class="p14-status" id="p14-status" aria-live="polite">Select a patch to configure the existing synthesis engines.</div><button id="p14-stop">■ STOP DRONE / SEQUENCE</button>`;
+const footer=document.querySelector('.footer');footer?.before(atlas);
+const nav=document.createElement('nav');nav.id='p14-nav';nav.innerHTML='<a href="#p14-atlas">PATCH ATLAS</a><a href="#p14-matrix">SYNTHESIS MATRIX</a><a href="#p14-logic">SONIC LOGIC</a><a href="#p14-lab">PATCH LAB</a><a href="#banks">ENGINE BANKS</a><a href="#bankSeqInterface">SEQUENCER</a><a href="#engineOscilloscopePanel">OSCILLOSCOPES</a><a href="#keys">KEYBOARD</a>';document.querySelector('main')?.prepend(nav);
+const id=x=>document.getElementById(x), status=msg=>id('p14-status').textContent=msg;
+const copy=r=>JSON.parse(JSON.stringify(r));
+function stopDrone(){for(const r of droneRecords){for(const o of r.sources){try{o.stop()}catch{}}try{r.env.disconnect();r.tone.disconnect()}catch{}}droneRecords=[]}
+function stopPerformance(){stopDrone();stopSeq()}
+function disconnectRoutes(){for(const r of matrixConnections){try{r.source.disconnect(r.gain)}catch{}try{r.gain.disconnect()}catch{}}matrixConnections=[]}
+function validateRoutes(routes){const used=new Set();return routes.filter(r=>Number.isInteger(r.from)&&Number.isInteger(r.to)&&r.from>=0&&r.to<8&&r.from<r.to&&Number.isFinite(r.gain)&&r.gain>=0&&r.gain<=.18&&!used.has(r.from+':'+r.to)&&used.add(r.from+':'+r.to)).slice(0,12)}
+function applyMatrix(){disconnectRoutes();currentRoutes=validateRoutes(currentRoutes);if(ctx&&busNodes.length===8){for(const r of currentRoutes){const gain=ctx.createGain();gain.gain.value=r.gain;busNodes[r.from].trim.connect(gain);gain.connect(busNodes[r.to].input);matrixConnections.push({source:busNodes[r.from].trim,gain})}}renderRoutes()}
+function renderRoutes(){id('p14-graph').innerHTML='<div class="p14-node">64 engine slots → 8 bank filters / FX / level</div><div class="p14-arrow">↓</div><div class="p14-node">8 bank output trims → master FX → output</div>'+(currentRoutes.length?'<div class="p14-arrow">↘ Forward bank audio sends ↙</div>'+currentRoutes.map(r=>`<div class="p14-node">BANK ${r.from+1} → ${Math.round(r.gain*100)}% → BANK ${r.to+1} FILTER</div>`).join(''):'');id('p14-routes').innerHTML=currentRoutes.map((r,i)=>`<div class="p14-route">BANK ${r.from+1} → BANK ${r.to+1} · ${Math.round(r.gain*100)}% <button data-remove-route="${i}">REMOVE</button></div>`).join('')||'<p class="p14-caption">No additional bank sends. All banks retain their direct master path.</p>'}
+const opts=Array.from({length:8},(_,i)=>`<option value="${i}">BANK ${String(i+1).padStart(2,'0')}</option>`).join('');id('p14-from').innerHTML=opts;id('p14-to').innerHTML=opts;id('p14-to').value='1';
+id('p14-connect').onclick=()=>{const from=+id('p14-from').value,to=+id('p14-to').value,gain=+id('p14-send').value/100;if(from>=to){status('Matrix: destination must be a later bank, to prevent feedback cycles');return}if(currentRoutes.some(r=>r.from===from&&r.to===to)){status('Matrix: route already exists');return}if(currentRoutes.length>=12){status('Matrix: maximum 12 additional sends');return}currentRoutes.push({from,to,gain});applyMatrix();status('Connected real audio send from bank '+(from+1)+' to '+(to+1))};
+id('p14-clear').onclick=()=>{currentRoutes=[];applyMatrix();status('Additional matrix sends cleared')};
+id('p14-routes').onclick=e=>{const b=e.target.closest('[data-remove-route]');if(b){currentRoutes.splice(+b.dataset.removeRoute,1);applyMatrix()}};
+// Preserve existing makeAudio and its WebAudio engine; extend it with matrix reconnection on context creation.
+const baseMakeAudio=makeAudio;makeAudio=function(){const old=ctx;baseMakeAudio();if(ctx&&ctx!==old)applyMatrix()};
+function renderAtlas(){
+ const host=id('p14-recipes');
+ const active=host.querySelector('.p15-atlas-detail[open]');
+ const previous=active?Number(active.dataset.patch):-1;
+ host.innerHTML=`<div class="p15-patch-strip" role="group" aria-label="Factory patches">${recipes.map((r,i)=>`<button type="button" class="p15-patch-tab ${i===previous?'selected':''}" data-p15-patch="${i}" aria-expanded="${i===previous}">${r.name}</button>`).join('')}</div><details class="p15-atlas-detail" ${previous>=0?'open':''} data-patch="${Math.max(0,previous)}"><summary>PATCH DETAILS · <span id="p15-patch-title">${previous>=0?recipes[previous].name:'SELECT A PATCH ABOVE'}</span></summary><div id="p15-patch-content"></div></details>`;
+ function show(i){const r=recipes[i],panel=host.querySelector('.p15-atlas-detail');panel.dataset.patch=i;panel.open=true;host.querySelector('#p15-patch-title').textContent=r.name;host.querySelector('#p15-patch-content').innerHTML=`<p>${r.notes}</p><div class="recipe"><span class="node">${r.types.map(t=>TYPES[t]).join(' + ')}</span><span>→</span><span class="node">Bank 01 → Master FX</span></div><p class="p14-caption">${r.why} · ${r.mode}</p><button data-p14-load="${i}">▶ LOAD & PLAY</button>`;host.querySelectorAll('[data-p15-patch]').forEach(b=>{const yes=+b.dataset.p15Patch===i;b.classList.toggle('selected',yes);b.setAttribute('aria-expanded',String(yes))})}
+ host.querySelectorAll('[data-p15-patch]').forEach(btn=>btn.addEventListener('click',()=>show(+btn.dataset.p15Patch)));
+ if(previous>=0)show(previous);
+}
+function loadRecipe(r){stopPerformance();disconnectRoutes();state.banks.forEach((b,i)=>{b.slots.forEach(slot=>slot.on=false);b.level=i===0?r.level:45;b.cutoff=r.cutoff;b.pan=50;b.insert='none'});r.types.forEach((type,i)=>{state.banks[0].slots[i].on=true;state.banks[0].slots[i].type=type});state.master=48;state.delayMix=r.delay;state.feedback=r.feedback;state.drive=0;state.lfoDepth=8;state.lfoRate=.23;state.lfoDest='filter';state.bankPatterns.forEach((p,b)=>{p.mute=b!==0;p.length=16;p.arp='off';p.steps.forEach((st,i)=>{st.on=b===0&&i%4===0;st.pitch=r.pattern[Math.floor(i/4)%r.pattern.length];st.velocity=85;st.gate=52;st.filter=r.cutoff})});for(const key of ['master','delayMix','feedback','drive','lfoDepth','lfoRate','lfoDest']){const el=id(key);if(el){el.value=state[key];el.dispatchEvent(new Event('input',{bubbles:false}))}}buildUI();updateAudio();currentRoutes=copy(r.routes||[]);applyMatrix();status('Loaded '+r.name+' · '+r.family)}
+async function launchRecipe(r){loadRecipe(r);const mode=id('p14-mode').value==='recipe'?r.mode:id('p14-mode').value;if(!await ensure())return;if(mode==='arp'){if(!seqTimer)id('seq').click();status('Playing '+r.name+' · 16-step pattern')}else if(mode==='drone'){const t=ctx.currentTime+.02;for(let j=0;j<r.types.length;j++){const rec=voice(r.types[j],48+j*7,t,90,window.__continuumSlotInputs?.[0]?.[j]||busNodes[0].input,.65);droneRecords.push(rec)}status('Playing '+r.name+' · sustained 90-second layer; STOP ends it early')}else{trigger(48,null,1.4);status('Loaded '+r.name+' · play using keyboard or MIDI controls where available')}}
+atlas.addEventListener('click',e=>{const b=e.target.closest('[data-p14-load]');if(b){current=+b.dataset.p14Load;launchRecipe(recipes[current])}});
+function mutate(r,amount){const q=copy(r);const pick=()=>Math.random()*2-1;q.cutoff=clamp(Math.round(q.cutoff+pick()*amount*.28),12,90);q.level=clamp(Math.round(q.level+pick()*amount*.12),20,55);q.delay=clamp(Math.round(q.delay+pick()*amount*.15),0,38);q.feedback=clamp(Math.round(q.feedback+pick()*amount*.07),0,26);q.pattern=q.pattern.map(v=>clamp(v+(Math.random()<amount/170?Math.round(pick()*5):0),-12,24));if(Math.random()<amount/140)q.types[Math.random()<.5?0:1]=Math.floor(Math.random()*8);return q}
+id('p14-discover').onclick=()=>{const mode=id('p14-discovery').value,novelty=+id('p14-novelty').value;let candidate=mode==='evolve'?mutate(recipes[current],novelty):mode==='guided'?mutate(recipes[Math.floor(Math.random()*8)*4],Math.min(novelty,45)):mutate(recipes[Math.floor(Math.random()*32)],novelty);candidate.name=(mode==='evolve'?'Evolution':'Discovery')+' '+Math.floor(Math.random()*10000);candidate.notes='Locally generated from bounded parameters and valid existing engine types.';candidate.routes=[];id('p14-suggestion').innerHTML=`<div class="p14-patch"><strong>${candidate.name}</strong><p>${candidate.types.map(t=>TYPES[t]).join(' + ')} · filter ${candidate.cutoff}% · bank ${candidate.level}%</p><button id="p14-try-suggestion">▶ AUDITION DISCOVERY</button><button id="p14-keep-suggestion">KEEP IN ACTIVE SLOT</button></div>`;id('p14-try-suggestion').onclick=()=>launchRecipe(candidate);id('p14-keep-suggestion').onclick=()=>{recipes[current]=copy(candidate);renderAtlas();status('Discovery retained in current session; export JSON to keep it')};status('Generated bounded candidate; auditory preference requires your judgement')};
+id('p14-variations').onclick=()=>{labCandidates=Array.from({length:4},(_,i)=>({...mutate(recipes[current],18+i*18),name:recipes[current].name+' · Variant '+(i+1)}));id('p14-variants').innerHTML=labCandidates.map((r,i)=>`<div class="p14-patch"><strong>${r.name}</strong><p>Filter ${r.cutoff}% · bank ${r.level}% · delay ${r.delay}% · engines ${r.types.map(t=>TYPES[t]).join(' / ')}</p><button data-lab-play="${i}">▶ AUDITION</button><button data-lab-keep="${i}">KEEP & EVOLVE</button></div>`).join('');status('Four bounded patch variations ready to audition')};
+id('p14-variants').onclick=e=>{const play=e.target.closest('[data-lab-play]'),keep=e.target.closest('[data-lab-keep]');if(play)launchRecipe(labCandidates[+play.dataset.labPlay]);if(keep){recipes[current]=copy(labCandidates[+keep.dataset.labKeep]);renderAtlas();id('p14-variations').click();status('Variation selected; four new descendants generated')}};
+id('p14-save').onclick=()=>{const payload={format:'continuum-synth-p14-patch',version:1,recipe:recipes[current],matrixRoutes:currentRoutes,performanceMode:id('p14-mode').value};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Continuum_P14_'+recipes[current].name.replace(/[^a-z0-9]+/gi,'_')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+id('p14-stop').onclick=()=>{stopPerformance();status('Atlas performance stopped')};id('panic')?.addEventListener('click',stopDrone);id('killAudio')?.addEventListener('click',()=>{stopDrone();disconnectRoutes()});
+renderAtlas();renderRoutes();
+})();
+</script>
+<style id="p15-style">
+/* P15 engine editing, compact discovery workspace */
+.engine-editor{grid-column:1/-1;background:#0c0c0d;border:1px solid #765737;border-radius:5px;padding:9px;margin-top:5px}
+.engine-editor h4{margin:0 0 7px;font-size:11px;font-weight:500;color:#e8c18a;letter-spacing:.1em}
+.engine-editor .edit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:7px}
+.engine-editor label{font-size:10px;color:#c9c6c0;min-width:0}
+.engine-editor input[type=range]{height:17px;accent-color:#d6a35f;touch-action:pan-x}
+.engine-editor select{width:100%;font-size:10px}
+.engine-editor output{color:#e8c18a;font-size:10px}
+.slot button.engine-edit{border-color:#926b3e!important;color:#e8c18a!important}
+.slot.engine-selected{border-color:#c99a61!important}
+.p15-workspace{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.p15-workspace>.p14-sub{margin:0!important;min-width:0}
+.p15-workspace h2{font-size:13px!important;line-height:1.3}
+.p15-workspace .p14-graph{padding:5px!important}
+.p15-workspace .p14-controls{gap:5px!important}
+.p15-workspace .p14-caption{font-size:10px!important}
+@media(max-width:1000px){.p15-workspace{grid-template-columns:1fr 1fr}.p15-workspace>#p14-lab{grid-column:1/-1}}
+@media(max-width:650px){.p15-workspace{grid-template-columns:1fr}.p15-workspace>#p14-lab{grid-column:auto}}
+</style>
+<script id="p15-engine-rollout">
+/* P15: genuine per-slot audio controls, envelope, modulation and note mapping. */
+(function(){
+'use strict';
+const fresh=()=>({wave1:'sawtooth',wave2:'sine',mix:50,detune:0,transpose:0,ratio:2,index:35,pd:0,cutoff:85,resonance:12,filter:'lowpass',envDepth:0,lfoRate:2,lfoDepth:0,lfoTarget:'filter',attack:12,decay:25,sustain:65,release:25,combFeedback:25,wtEnabled:'off',wtMorph:0,wtTilt:50,wtOdd:50,wtH1:100,wtH2:40,wtH3:28,wtH4:20,wtH5:14,wtH6:10,wtH7:8,wtH8:6});
+function norm(){state.banks.forEach(b=>b.slots.forEach(s=>{if(!s.edit)s.edit=fresh();else s.edit={...fresh(),...s.edit}}))}
+norm();
+let selected=Array(8).fill(0);
+const defs=[['wave1','OSC 1 WAVE',['sine','triangle','sawtooth','square']],['wave2','OSC 2 WAVE',['sine','triangle','sawtooth','square']],['mix','OSC 2 MIX',0,100],['detune','DETUNE (cents)',-100,100],['transpose','PITCH (semitones)',-24,24],['ratio','FM RATIO',0.25,12,.25],['index','FM INDEX',0,100],['pd','PD / FOLD',0,100],['filter','FILTER MODE',['lowpass','highpass','bandpass','notch','comb']],['cutoff','CUTOFF',0,100],['resonance','RESONANCE',0,100],['envDepth','FILTER ENV',-100,100],['lfoRate','LFO Hz',0.05,20,.05],['lfoDepth','LFO DEPTH',0,100],['lfoTarget','LFO ROUTE',['filter','pitch','amplitude']],['attack','ATTACK',0,100],['decay','DECAY',0,100],['sustain','SUSTAIN',0,100],['release','RELEASE',0,100],['combFeedback','COMB FEEDBACK',0,90],['wtEnabled','SPECTRAL WAVETABLE',['off','on']],['wtMorph','WAVETABLE MORPH',0,100],['wtTilt','SPECTRAL TILT',0,100],['wtOdd','ODD / EVEN BALANCE',0,100],...Array.from({length:8},(_,i)=>['wtH'+(i+1),'HARMONIC '+(i+1),0,100])];
+const relevant={0:['wave1','wave2','mix','detune','transpose','filter','cutoff','resonance','envDepth','lfoRate','lfoDepth','lfoTarget','attack','decay','sustain','release'],1:null,2:null,3:null,4:null,5:null,6:null,7:null};
+ function compactDials(host){
+  host.querySelectorAll('.edit-grid input[type="range"][data-p15]').forEach(input=>{
+   const label=input.closest('label');if(!label)return;
+   label.classList.add('p18-dial-field');
+   const dial=document.createElement('span');dial.className='p18-mini-dial';dial.setAttribute('role','slider');dial.tabIndex=0;
+   dial.setAttribute('aria-label',label.firstChild?.textContent?.trim()||'DSP parameter');
+   const output=input.nextElementSibling;
+   function sync(){const min=+input.min,max=+input.max,v=+input.value,p=Math.max(0,Math.min(1,(v-min)/(max-min||1)));
+    dial.style.setProperty('--p18-turn',(-135+p*270)+'deg');dial.style.setProperty('--p18-sweep',(p*270)+'deg');
+    dial.setAttribute('aria-valuemin',min);dial.setAttribute('aria-valuemax',max);dial.setAttribute('aria-valuenow',v);
+    if(output)output.textContent=input.value;
+   }
+   function set(v){const min=+input.min,max=+input.max,step=+(input.step||1);const n=Math.max(min,Math.min(max,min+Math.round((v-min)/step)*step));input.value=String(+n.toFixed(5));input.dispatchEvent(new Event('input',{bubbles:true}));sync()}
+   dial.addEventListener('pointerdown',e=>{if(e.button!==0&&e.pointerType==='mouse')return;e.preventDefault();dial.focus();dial.setPointerCapture(e.pointerId);dial._startY=e.clientY;dial._startValue=+input.value});
+   dial.addEventListener('pointermove',e=>{if(!dial.hasPointerCapture(e.pointerId))return;const delta=(dial._startY-e.clientY)/105*(+input.max-(+input.min));set(dial._startValue+delta)});
+   dial.addEventListener('keydown',e=>{let dir=e.key==='ArrowUp'||e.key==='ArrowRight'?1:e.key==='ArrowDown'||e.key==='ArrowLeft'?-1:0;if(e.key==='Home'){set(+input.min);e.preventDefault()}else if(e.key==='End'){set(+input.max);e.preventDefault()}else if(dir){set(+input.value+dir*+(input.step||1)*(e.shiftKey?10:1));e.preventDefault()}});
+   input.classList.add('p18-native-range');input.setAttribute('tabindex','-1');
+   input.after(dial);sync();
+  });
+ }
+function render(b){const bank=document.querySelectorAll('#banks .bank')[b];if(!bank)return;const slot=state.banks[b].slots[selected[b]],e=slot.edit;const host=bank.querySelector('.engine-editor');if(!host)return;host.innerHTML=`<h4>BANK ${b+1} · ENGINE ${selected[b]+1} · ${TYPES[slot.type].toUpperCase()} · LIVE DSP EDITOR</h4><div class="edit-grid">`+defs.map(d=>{let [k,label,values,max,step]=d;return `<label>${label}${Array.isArray(values)?`<select data-p15="${b},${selected[b]},${k}">${values.map(v=>`<option value="${v}" ${e[k]===v?'selected':''}>${v.toUpperCase()}</option>`).join('')}</select>`:`<input type="range" min="${values}" max="${max}" step="${step||1}" value="${e[k]}" data-p15="${b},${selected[b]},${k}"><output>${e[k]}</output>`}</label>`}).join('')+'</div><p class="note">OSC → FM / wavefold → multimode filter → ADSR → bank bus. Modulation routes are per-engine. Comb mode uses bounded delay feedback.</p>';
+ compactDials(host); bank.querySelectorAll('.slot').forEach((n,i)=>n.classList.toggle('engine-selected',i===selected[b]));}
+function install(){norm();document.querySelectorAll('#banks .bank').forEach((bank,b)=>{if(!bank.querySelector('.engine-editor')){bank.querySelectorAll('.slot').forEach((el,s)=>{if(!el.querySelector('.engine-edit')){let btn=document.createElement('button');btn.className='engine-edit';btn.textContent='⚙ EDIT DSP';btn.dataset.p15select=b+','+s;el.append(btn)}});let host=document.createElement('div');host.className='engine-editor';bank.querySelector('.rackBody').append(host)}render(b)})}
+install();const originalBuild=buildUI;buildUI=function(){originalBuild();install()};
+document.addEventListener('click',ev=>{let t=ev.target.closest('[data-p15select]');if(t){let [b,s]=t.dataset.p15select.split(',').map(Number);selected[b]=s;render(b)}});
+document.addEventListener('input',ev=>{let t=ev.target;if(!t.dataset.p15)return;let [b,s,k]=t.dataset.p15.split(',');state.banks[+b].slots[+s].edit[k]=t.type==='range'?+t.value:t.value;let o=t.nextElementSibling;if(o&&o.tagName==='OUTPUT')o.textContent=t.value});
+document.addEventListener('change',ev=>{let t=ev.target;if(t.dataset.type){let [b,s]=t.dataset.type.split(',').map(Number);if(selected[b]===s)render(b)}});
+// MIDI note numbers are authoritative; the octave selector determines the first C on the keyboard.
+function renderKeyboard(){const base=12*(+document.getElementById('octave').value+1), names=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];document.getElementById('keys').innerHTML=Array.from({length:73},(_,i)=>{const midi=base+i;return `<button class="key ${[1,3,6,8,10].includes(midi%12)?'sharp':''}" data-note="${i}" title="MIDI ${midi}">${names[midi%12]}${Math.floor(midi/12)-1}</button>`}).join('')}
+renderKeyboard();document.getElementById('octave').addEventListener('change',renderKeyboard);
+// Engine-aware voice rendering: all controls drive WebAudio nodes rather than decorative UI.
+voice=function(type,midi,start,duration,destination,velocity=1,edit=null){
+ const e={...fresh(),...(edit||{})}, c=ctx, end=start+Math.max(.05,duration), f=440*Math.pow(2,(midi+e.transpose-69)/12);
+ const nodes=[],sources=[],output=c.createGain(),filter=c.createBiquadFilter(),env=c.createGain(),oscMix=c.createGain();nodes.push(output,filter,env,oscMix);
+ const attack=Math.min(Math.max(.002,duration*.6),.002+e.attack/100*2),decay=.005+e.decay/100*2,sustain=e.sustain/100,release=.01+e.release/100*3;
+ const peak=Math.max(.0002,.11*velocity), sustainGain=Math.max(.0001,peak*sustain), off=end, stop=end+release+.08;
+ env.gain.setValueAtTime(.0001,start);env.gain.linearRampToValueAtTime(peak,start+attack);env.gain.setTargetAtTime(sustainGain,start+attack,Math.max(.003,decay/3));env.gain.setValueAtTime(sustainGain,off);env.gain.exponentialRampToValueAtTime(.0001,stop);
+ const freq=Math.min(19000,Math.max(35,35*Math.pow(500,e.cutoff/100)));
+ filter.type=e.filter==='comb'?'bandpass':e.filter;filter.frequency.setValueAtTime(freq,start);filter.Q.setValueAtTime(.15+e.resonance/100*22,start);
+ if(e.envDepth){const destFreq=Math.max(35,Math.min(19000,freq*Math.pow(2,e.envDepth/100*4)));filter.frequency.setValueAtTime(destFreq,start);filter.frequency.exponentialRampToValueAtTime(freq,Math.max(start+.01,start+attack+decay))}
+ oscMix.connect(filter);filter.connect(env);env.connect(output);output.connect(destination);
+ const osc=(wave,hz,gain)=>{const o=c.createOscillator(),a=c.createGain();o.type=wave;o.frequency.setValueAtTime(Math.max(10,hz),start);a.gain.value=gain;o.connect(a);a.connect(oscMix);o.start(start);o.stop(stop);sources.push(o);nodes.push(a);return o};
+ let a=osc(e.wave1,f,Math.max(.001,1-e.mix/100)),b=osc(e.wave2,f*Math.pow(2,e.detune/1200),e.mix/100);
+ // P17 genuine PeriodicWave harmonic synthesis: OSC 1 uses 8 editable partials.
+ // Morph interpolates the authored spectrum with a bright harmonic profile;
+ // tilt and odd/even balance are applied to each actual oscillator coefficient.
+ if(e.wtEnabled==='on'){
+   const real=new Float32Array(9),imag=new Float32Array(9),m=e.wtMorph/100;
+   for(let h=1;h<=8;h++){
+     const authored=Math.max(0,+e['wtH'+h]||0)/100;
+     const bright=1/Math.sqrt(h);
+     const tilt=Math.pow(h,(50-e.wtTilt)/55);
+     const balance=h%2?(.5+e.wtOdd/100):(1.5-e.wtOdd/100);
+     imag[h]=Math.max(0.00001,((1-m)*authored+m*bright)*tilt*balance);
+   }
+   a.setPeriodicWave(c.createPeriodicWave(real,imag,{disableNormalization:false}));
+ }
+
+ if(type===2||type===7||e.index>0){const m=c.createOscillator(),mg=c.createGain();m.type='sine';m.frequency.value=f*e.ratio;mg.gain.value=f*e.index/100*4;m.connect(mg);mg.connect(a.frequency);m.start(start);m.stop(stop);sources.push(m);nodes.push(mg)}
+ if(type===3||e.pd>0){const sh=c.createWaveShaper();sh.curve=waveShape(Math.min(.95,e.pd/100*.6));sh.oversample='2x';oscMix.disconnect();oscMix.connect(sh);sh.connect(filter);nodes.push(sh)}
+ if(type===5){const n=c.createOscillator(),g=c.createGain();n.type='sine';n.frequency.value=f*2;g.gain.value=.25;n.connect(g);g.connect(oscMix);n.start(start);n.stop(stop);sources.push(n);nodes.push(g)}
+ if(type===6){for(let i=2;i<=5;i++)osc('sine',f*i,.15/(i*i))}
+ if(e.filter==='comb'){const d=c.createDelay(.15),fb=c.createGain(),wet=c.createGain();d.delayTime.value=Math.min(.12,1/Math.max(40,f));fb.gain.value=Math.min(.88,e.combFeedback/100*.9);wet.gain.value=.38;filter.connect(d);d.connect(fb);fb.connect(d);d.connect(wet);wet.connect(env);nodes.push(d,fb,wet)}
+ if(e.lfoDepth>0){const l=c.createOscillator(),lg=c.createGain();l.type='sine';l.frequency.value=e.lfoRate;lg.gain.value=e.lfoTarget==='filter'?freq*.7*e.lfoDepth/100:e.lfoTarget==='pitch'?f*.12*e.lfoDepth/100:peak*.35*e.lfoDepth/100;l.connect(lg);lg.connect(e.lfoTarget==='filter'?filter.frequency:e.lfoTarget==='pitch'?a.frequency:env.gain);l.start(start);l.stop(stop);sources.push(l);nodes.push(lg)}
+ const record={sources,nodes,env,tone:filter,end:stop};voices.add(record);setTimeout(()=>{sources.forEach(o=>{try{o.disconnect()}catch{}});nodes.forEach(n=>{try{n.disconnect()}catch{}});voices.delete(record)},Math.max(100,(stop-c.currentTime+.15)*1000));return record;
+};
+// Preserve all P14 routing and sequencer behaviour while passing per-slot parameters.
+trigger=function(midi=48,at=null,duration=.28,only=null){if(!ctx)return;const t=Math.max(ctx.currentTime+.004,at??ctx.currentTime+.008);let count=0;state.banks.forEach((bank,b)=>bank.slots.forEach((slot,s)=>{if(!slot.on||(only&&(only[0]!==b||only[1]!==s)))return;if(count++>=64)return;voice(slot.type,midi,t,duration,window.__continuumSlotInputs?.[b]?.[s]||busNodes[b].input,1,slot.edit);const meter=document.getElementById('meter'+b);if(meter){meter.style.width='85%';setTimeout(()=>meter.style.width='0%',180)}}));if(!count&&only){const [b,s]=only,slot=state.banks[b].slots[s];voice(slot.type,midi,t,duration,busNodes[b].input,1,slot.edit)}};
+// Engine oscilloscopes: shorter capture windows make actual low/mid pitch cycles legible.
+const oldMake=makeAudio;makeAudio=function(){oldMake();if(scopeAnalyser)scopeAnalyser.fftSize=512};
+// Compact three-column workspace retains the original controls and event listeners.
+const matrix=document.getElementById('p14-matrix'),logic=document.getElementById('p14-logic'),lab=document.getElementById('p14-lab');if(matrix&&logic&&lab){const row=document.createElement('div');row.className='p15-workspace';matrix.before(row);row.append(matrix,logic,lab)}
+})();
+</script><style id="p17-mamba-atlas-style">
+#p17-atlas{margin:12px 0;padding:12px;border:1px solid #aa7745;border-radius:7px;background:#09090a}
+#p17-atlas h2{font-size:15px;color:#efbd7b;letter-spacing:.11em;margin:0 0 7px}
+#p17-atlas p{font-size:11px;color:#bfb1a0;line-height:1.5}
+.p17-line{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin:10px 0}
+.p17-line label{min-width:110px;flex:0 1 190px;font-size:10px}
+.p17-line input,.p17-line select{width:100%;background:#111113;color:#f1dcc2;border:1px solid #6b5035;padding:7px;border-radius:4px}
+#p17-atlas button{border:1px solid #ae7b44!important;background:#141416!important;color:#f0bc7d!important;padding:8px 10px!important;font-size:11px!important}
+#p17-atlas button:hover{background:#252527!important}
+#p17-patches{display:flex;gap:6px;flex-wrap:wrap;max-height:170px;overflow-y:auto;padding:6px 0}
+#p17-patches button.p17-picked{background:#30271d!important;border-color:#ffcb87!important}
+#p17-details{background:#0d0d0f;border:1px solid #55402d;padding:10px;border-radius:5px;min-height:46px}
+#p17-status{font-size:11px;color:#edbc7b;margin-top:8px}
+#p14-atlas{padding:9px!important;margin-top:8px!important}
+#p14-atlas>h2,#p14-atlas>.p14-caption{display:none}
+#p14-atlas #p14-recipes{max-width:100%;overflow:hidden}
+#p14-atlas .p15-patch-strip{padding-bottom:5px}
+#p14-atlas .p15-atlas-detail{min-height:0!important}
+#p17-legacy>summary{cursor:pointer;color:#c9a57a;font-size:11px;padding:8px}
+</style>
+<script id="p17-black-mamba-patch-atlas">
+(function(){'use strict';
+const key='continuum-black-mamba-p17-engine-patches';
+const names=['Subharmonic Pulse','Spectral Silk','Copper Drive','Harmonic Array','Nocturnal Glass','Phase Motion','Resonant Skin','Cross Modulation'];
+const types=['Acid / 303-inspired','Hybrid subtractive','FM matrix','Macro wavefold','Spectral wavetable','Physical resonator','Additive harmonics','Cross modulation'];
+const initial=(i)=>({name:names[i],type:i,edit:{wave1:'sawtooth',wave2:'sine',mix:20+i*6,detune:0,transpose:0,ratio:1.5+i*.5,index:i===2||i===7?45:0,pd:i===3?42:0,filter:'lowpass',cutoff:70-i*5,resonance:12+i*5,envDepth:0,lfoRate:1+i*.25,lfoDepth:i%3?12:0,lfoTarget:'filter',attack:i===1||i===4?38:4,decay:20+i*5,sustain:45+i*4,release:i===1||i===4?60:22,combFeedback:25,wtEnabled:'on',wtMorph:i*11,wtTilt:30+i*6,wtOdd:i%2?78:32,wtH1:100,wtH2:i%2?18:70,wtH3:65-i*4,wtH4:14+i*5,wtH5:48-i*3,wtH6:12+i*3,wtH7:24+i*2,wtH8:6+i*4}});
+let saved=[];try{const raw=JSON.parse(localStorage.getItem(key)||'[]');if(Array.isArray(raw))saved=raw.filter(x=>x&&typeof x.name==='string'&&Number.isInteger(x.type)&&x.edit&&typeof x.edit==='object').slice(0,128)}catch{}
+let chosen={source:'factory',index:0};
+const host=document.createElement('section');host.id='p17-atlas';
+host.innerHTML=`<h2>PARALLEL HYBRID ARCHITECTURE · ENGINE PATCH ATLAS</h2><p>Design a sound in any LIVE DSP EDITOR, then capture its complete engine settings here. Select a patch to inspect it; LOAD TO ENGINE deliberately replaces only the chosen engine. Spectral harmonic edits are real audio parameters, not decorative controls.</p><div class="p17-line"><label>TARGET BANK<select id="p17-bank"></select></label><label>TARGET ENGINE<select id="p17-engine"></select></label><label>PATCH NAME<input id="p17-name" maxlength="64" value="My Engine Patch" aria-label="Patch name"></label></div><div class="p17-line"><button id="p17-capture">+ CAPTURE TARGET ENGINE</button><button id="p17-export">↓ EXPORT ENGINE PATCH</button><button id="p17-import">↑ IMPORT ENGINE PATCH</button><input type="file" id="p17-file" accept=".json,application/json" hidden></div><div id="p17-patches"></div><div id="p17-details" aria-live="polite"></div><div id="p17-status" aria-live="polite">Select a patch, then choose its destination engine.</div>`;
+const atlas=document.getElementById('p14-atlas');atlas.before(host);
+const old=document.createElement('details');old.id='p17-legacy';old.innerHTML='<summary>LEGACY LIBRARY · 32 ORIGINAL FACTORY STARTING POINTS (EXPAND)</summary>';atlas.before(old);old.append(atlas);
+const $=id=>document.getElementById(id), bank=$('p17-bank'),engine=$('p17-engine');
+for(let i=0;i<8;i++){bank.add(new Option('BANK '+String(i+1).padStart(2,'0'),i));engine.add(new Option('ENGINE '+String(i+1).padStart(2,'0'),i))}
+const selected=()=>chosen.source==='factory'?initial(chosen.index):saved[chosen.index];
+const valid=(x)=>x&&typeof x.name==='string'&&x.name.length<=100&&Number.isInteger(x.type)&&x.type>=0&&x.type<8&&x.edit&&typeof x.edit==='object'&&!Array.isArray(x.edit);
+const msg=s=>$('p17-status').textContent=s;
+function render(){const items=[...names.map((n,i)=>({name:n,source:'factory',index:i})),...saved.map((p,i)=>({name:p.name,source:'saved',index:i}))];$('p17-patches').innerHTML=items.map(x=>`<button type="button" data-source="${x.source}" data-index="${x.index}" class="${chosen.source===x.source&&chosen.index===x.index?'p17-picked':''}">${x.source==='factory'?'◇ ':'● '}${x.name.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')}</button>`).join('');const p=selected();if(!p)return;$('p17-details').innerHTML=`<strong style="color:#efbc78">${p.name.replaceAll('&','&amp;').replaceAll('<','&lt;')}</strong><p>${types[p.type]} · ${p.edit.wtEnabled==='on'?'8-partial spectral wavetable enabled':'standard oscillators'} · ${Object.keys(p.edit).length} stored DSP parameters</p><div class="p17-line"><button id="p17-load">▶ LOAD TO TARGET ENGINE</button>${chosen.source==='saved'?'<button id="p17-delete">DELETE SAVED PATCH</button>':''}</div>`}
+function store(){try{localStorage.setItem(key,JSON.stringify(saved))}catch{msg('Browser storage unavailable: export JSON to keep patches')}}
+$('p17-patches').onclick=e=>{const b=e.target.closest('[data-source]');if(!b)return;chosen={source:b.dataset.source,index:+b.dataset.index};render()};
+$('p17-capture').onclick=()=>{const b=+bank.value,s=+engine.value,slot=state.banks[b].slots[s];const p={name:$('p17-name').value.trim()||'Untitled engine',type:slot.type,edit:JSON.parse(JSON.stringify(slot.edit||{}))};saved.push(p);if(saved.length>128)saved.shift();chosen={source:'saved',index:saved.length-1};store();render();msg('Captured BANK '+(b+1)+' ENGINE '+(s+1)+' including spectral and live DSP parameters')};
+$('p17-details').onclick=e=>{if(e.target.closest('#p17-load')){const p=selected(),b=+bank.value,s=+engine.value,slot=state.banks[b].slots[s];if(!p)return;slot.type=p.type;slot.edit=JSON.parse(JSON.stringify(p.edit));slot.on=true;buildUI();msg('Loaded '+p.name+' into BANK '+(b+1)+' ENGINE '+(s+1)+' · engine enabled · use AUDITION or sequencer to hear it')}if(e.target.closest('#p17-delete')&&chosen.source==='saved'){saved.splice(chosen.index,1);chosen={source:'factory',index:0};store();render();msg('Saved patch deleted')}};
+$('p17-export').onclick=()=>{const p=selected();if(!p)return;const blob=new Blob([JSON.stringify({format:'continuum-black-mamba-engine-p17',version:1,patch:p},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Continuum_Engine_'+p.name.replace(/[^a-z0-9]+/gi,'_')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+$('p17-import').onclick=()=>$('p17-file').click();$('p17-file').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{if(f.size>200000)throw Error('File too large');const obj=JSON.parse(await f.text());if(obj.format!=='continuum-black-mamba-engine-p17'||!valid(obj.patch))throw Error('Not a valid P17 engine patch');saved.push({name:obj.patch.name,type:obj.patch.type,edit:obj.patch.edit});chosen={source:'saved',index:saved.length-1};store();render();msg('Imported '+obj.patch.name+' · choose LOAD TO TARGET ENGINE')}catch(err){msg('Import failed: '+err.message)}e.target.value=''};
+render();
+})();
+</script><style id="p17b02-engine-button-restoration">
+/* Restore the approved P16 Build 02 dimensions and colours, without modifying DSP. */
+#banks .slot button.engine-edit,
+#banks .slot .engine-edit {
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:100%!important;min-height:23px!important;max-height:23px!important;height:23px!important;
+  padding:2px 3px!important;font-size:9px!important;font-weight:650!important;
+  line-height:1!important;letter-spacing:0!important;white-space:nowrap!important;
+  color:#efb36a!important;background:#09090a!important;
+  border:1px solid #d99b52!important;border-radius:4px!important;
+  box-shadow:none!important;text-shadow:none!important;outline:none!important;
+}
+#banks .slot button.engine-edit:hover,#banks .slot button.engine-edit:focus-visible {
+  color:#ffd18f!important;background:#1b130c!important;border-color:#ffd18f!important;
+}
+#banks .slot.engine-selected button.engine-edit {
+  color:#ffd08b!important;background:#1d140c!important;border:1px solid #e9ae64!important;
+  box-shadow:inset 0 0 0 1px #684322!important;
+}
+</style>
+<style id="p18b08-white-racks-dsp-atlas">
+/* Build 08: white engine cartridges across all eight banks; dark legible text. */
+#banks .bank .slot{background:#fff!important;color:#141414!important;border-color:#555!important;}
+#banks .bank .slot .slotNumber{color:#161616!important;}
+#banks .bank .slot select{background:#fff!important;color:#111!important;border-color:#666!important;}
+#banks .bank .slot select option{background:#fff!important;color:#111!important;}
+#banks .bank .slot button:not(.engine-edit){background:#fff!important;color:#111!important;border-color:#777!important;}
+/* Invert Live DSP surfaces, not the rotary knobs themselves. */
+#banks .bank .engine-editor{background:#fff!important;color:#111!important;border-color:#444!important;}
+#banks .bank .engine-editor h4,#banks .bank .engine-editor p,#banks .bank .engine-editor .note{color:#111!important;}
+#banks .bank .engine-editor .edit-grid label{background:#fff!important;color:#111!important;border:1px solid #111!important;border-radius:6px!important;}
+#banks .bank .engine-editor .edit-grid output{color:#111!important;}
+#banks .bank .engine-editor .edit-grid select{background:#fff!important;color:#111!important;border-color:#666!important;}
+/* Each dial gets a white rounded-square pane with a black outline.
+   The 23px circular dial and its graphics remain unmodified. */
+#banks .bank .engine-editor .edit-grid label:has(.p18-mini-dial){position:relative!important;}
+#banks .bank .engine-editor .p18-mini-dial{outline:1px solid #111!important;outline-offset:4px!important;border-radius:50%!important;}
+#banks .bank .engine-editor .edit-grid label:has(.p18-mini-dial){border-radius:6px!important;}
+/* Engine Atlas surfaces only: retain existing lettering and its colours. */
+#p17-atlas,#p17-details,#p14-atlas,#p14-atlas .p15-atlas-detail,
+#p14-atlas #p15-patch-content{background:#fff!important;border-color:#666!important;}
+#p17-atlas .p17-line input,#p17-atlas .p17-line select{background:#fff!important;border-color:#777!important;}
+#p17-atlas button{background:#fff!important;border-color:#a75d0c!important;}
+#p17-atlas button:hover{background:#fff2df!important;}
+#p17-patches button.p17-picked{background:#ffedd4!important;}
+#p14-atlas .p15-patch-strip .p15-patch-tab{background:#fff!important;}
+#p14-atlas .p15-patch-strip .p15-patch-tab.selected{background:#fff0dc!important;}
+</style>
+<style id="p18b09-white-matrix-legibility">
+/* Build 09: limited visual corrections; no synthesis or routing changes. */
+
+#p14-matrix,#p14-atlas #p14-matrix.p14-sub{background:#fff!important;color:#151515!important;border-color:#777!important;}
+#p14-matrix h2,#p14-matrix .p14-caption,#p14-matrix label,#p14-matrix .p14-controls label,#p14-matrix #p14-routes{color:#171717!important;}
+#p14-matrix select,#p14-matrix input:not([type=range]),#p14-matrix button{background:#fff!important;color:#111!important;border-color:#777!important;}
+#p14-matrix option{background:#fff!important;color:#111!important;}
+/* Performance behaviour selector: restore readable dark-on-white text and options. */
+#p14-atlas label:has(> #p14-mode){color:#151515!important;}
+#p14-atlas #p14-mode,#p14-atlas #p14-mode option{background:#fff!important;color:#111!important;border:1px solid #777!important;opacity:1!important;-webkit-text-fill-color:#111!important;}
+</style>
+</body></html>
